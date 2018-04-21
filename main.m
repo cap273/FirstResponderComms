@@ -11,6 +11,9 @@
 clc
 clear
 
+% MATLAB reminder regarding matrix indexing:
+% A(2,4)  -> % Extract the element in row 2, column 4
+
 %% Architecture Enumeration
 % Create an M x N matrix, where each row in the matrix represents one 
 % complete architecture definition. 
@@ -171,16 +174,113 @@ end
  % matrix) is the same as the number of expected architectures
  if ( size(architectures,1) ~= prod(numArrayOptionsPerDecisions) )
      error('Error in enumerating all possible architectures');
+ else
+     % Establish number of possible architectures
+     NUM_POSSIBLE_ARCHS = size(architectures,1);
  end
  
  
  %% Architecture Evaluation
  
- % TODO: make assumptions on atmospheric losses, and on horizontal distance
- % to repeater
+ %%%%%%%%%%%%%%%%%%%%
+ % Make general assumptions
+ %%%%%%%%%%%%%%%%%%%%
  
- % TODO: per architecture, figure out link margin between repeater and
- % radio unit
+ % Some additional required margin (in deciBels) over the minimum Eb/No
+ % according to the Shannon limit
+ additionalMargindB = 3;
  
- % TODO: per architecture, figure out link margin between repeater and
- % dispatch center
+ % Antenna aperture efficiency (for both dispatch and repeater)
+ eff = 0.55;
+ 
+ % Temperature (in Kelvin) of receiving antenna, for all antennas
+ Tr = 200;
+
+ 
+ % TODO: make assumptions on atmospheric losses
+% losses of 10.0, converted to linear value
+atmLoss = convertToLinearFromdb(-10); 
+
+ % TODO: make assumptions on horizontal distance to repeater, for radio
+ % unit and for dispatch
+ hozDistanceRadio2Repeater = 10000; %10km
+ hozDistanceDispatch2Repeater = 3000; %10km
+ 
+ 
+%%%%%%%%%%%%%%%%%%%%%%%
+% Calculate link margin for frontend (between repeater and radio unit)
+% and link margin for backhaul (between repeater and dispatch) for each
+% possible architecture
+%%%%%%%%%%%%%%%%%%%%%%%
+ 
+ % Initialize column vector of length NUM_POSSIBLE_ARCHS
+ frontendLinkMargin = zeros(NUM_POSSIBLE_ARCHS,1);
+ backhaulLinkMargin = zeros(NUM_POSSIBLE_ARCHS,1);
+ 
+ % Iterate through each possible architecture 
+ for k = 1:1:NUM_POSSIBLE_ARCHS
+     
+     % For sanity's sake, extract all values for each decision in this
+     % architecture
+     thisPowerRadio = architectures(k,1);
+     thisGainRadio = architectures(k,2);
+     thisDiaRepeater = architectures(k,3);
+     thisPowerDispatch = architectures(k,4);
+     thisDiaDispatch = architectures(k,5);
+     thisFrontDataRate = architectures(k,6);
+     thisBackhaulDataRate = architectures(k,7);
+     thisFrontendBandwidth = architectures(k,8);
+     thisBackhaulBandwidth = architectures(k,9);
+     thisCarrierFrequency = architectures(k,10);
+     thisHeightRadioToRepeater = architectures(k,11);
+     thisHeightDispatchToRepeater = architectures(k,12);
+     
+     % Calculate slant range based on assumed horizontal range, and on this
+     % particular architecture's vertical height
+     thisSlantRangeRadioToRepeater = sqrt(hozDistanceRadio2Repeater^2 ...
+                                    + thisHeightRadioToRepeater^2);
+     thisSlantRangeDispatchToRepeater = sqrt(hozDistanceDispatch2Repeater^2 ...
+                                    + thisHeightDispatchToRepeater^2);
+     
+     % Find gain for the repeater and dispatch antenna
+     thisGainRepeater = calculateGainFromAntennaDiameter(eff,...
+                    thisDiaRepeater,thisCarrierFrequency);
+     thisGainDispatch = calculateGainFromAntennaDiameter(eff,...
+                    thisDiaDispatch,thisCarrierFrequency);
+                
+     % Find Eb/No (both calculated and minimum) for frontend links
+     thisFrontendEbNo = calculateLinearEbNo(thisPowerRadio,...
+                            thisGainRadio,...
+                            thisGainRepeater,...
+                            thisSlantRangeRadioToRepeater,...
+                            thisCarrierFrequency,...
+                            Tr,...
+                            thisFrontDataRate,...
+                            atmLoss);
+                        
+     thisFrontendEbNoMin = calculateLinearMinEbNo(thisFrontDataRate,...
+                                                  thisFrontendBandwidth);
+     
+     % Find Eb/No (both calculated and required) for backhaul links
+     thisBackhaulEbNo = calculateLinearEbNo(thisPowerDispatch,...
+                            thisGainDispatch,...
+                            thisGainRepeater,...
+                            thisSlantRangeDispatchToRepeater,...
+                            thisCarrierFrequency,...
+                            Tr,...
+                            thisBackhaulDataRate,...
+                            atmLoss);
+     thisBackhaulEbNoMin = calculateLinearMinEbNo(thisBackhaulDataRate,...
+                                                  thisBackhaulBandwidth);
+                                              
+     % Calculate link margin for frontend and backhaul links
+     frontendLinkMargin(k,1) = findLinkMarginIndB(thisFrontendEbNo, ...
+                                        thisFrontendEbNoMin,...
+                                        additionalMargindB);
+     
+     backhaulLinkMargin(k,1) = findLinkMarginIndB(thisBackhaulEbNo, ...
+                                        thisBackhaulEbNoMin,...
+                                        additionalMargindB);
+     
+ end
+
