@@ -74,6 +74,37 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
                 'RelTol',0.00001);
             
         end
+        
+        function testAntennaGain(testCase)
+            
+            %%%%%%%%%%%%%%%
+            % Define known inputs
+            %%%%%%%%%%%%%%%%
+            
+            txApertureDiameter = 0.5; % transmitter aperture, in meters
+            rxApertureDiameter = 6; % transmitter aperture, in meters
+            apertureEfficiency = 0.55;
+            radioFreq = 38.50*10^9; % 38.50 GHz
+            
+            %%%%%%%%%%%%%%%%
+            
+            % Calculate antenna gain for receiber and transmitter
+            txActGain = calculateGainFromAntennaDiameter(... 
+                apertureEfficiency,txApertureDiameter,radioFreq);
+            rxActGain = calculateGainFromAntennaDiameter(... 
+                apertureEfficiency,rxApertureDiameter,radioFreq);
+            
+            % Define expected gain (as linear value)
+            txExpGain =  22381.15509176170;
+            rxExpGain =  3222886.333213680;
+
+            % Verify Tx and Rx gains
+            testCase.verifyEqual(txActGain,txExpGain, ...
+                'RelTol',0.00001);
+            
+            testCase.verifyEqual(rxActGain,rxExpGain, ...
+                'RelTol',0.00001);
+        end
     end
     
 end 
