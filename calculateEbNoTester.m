@@ -1,5 +1,5 @@
 classdef calculateEbNoTester < matlab.unittest.TestCase
-    % calculateLinearEbNoTester tests solutions to the calculation of Eb/No
+    % calculateLinearEbNoTester Tests calculations of Eb/No
     % for the following functions:
     %   calculateLinearEbNo
     %   calculateLinearMinEbNo
@@ -41,7 +41,7 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
         function test
             
             
-        
+        end
     end
     
 end 

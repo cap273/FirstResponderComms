@@ -3,8 +3,8 @@
 % As deciBel values: they should be a negative value
 
 function EbNo = calculateLinearEbNo(Ptx,Gtx,Grx,slantRange,radioFreq,Tr,dataRate,atmLoss)
-%calculateLinearEbNo Calculate the energy per bit to noise power spectral 
-%density ratio (Eb/No for one particular digital communication link. 
+%calculateLinearEbNo Calculate Eb/No for one digital comms link. 
+%Eb/No is the the energy per bit to noise power spectral density ratio
 % NOTE: All inputs and outputs are linear magnitudes (vs deciBel values)
 %   Ptx: transmitter radiofrequency (RF) power
 %   Gtx: transmitter antenna gain
