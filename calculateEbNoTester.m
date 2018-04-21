@@ -3,6 +3,8 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
     % for the following functions:
     %   calculateLinearEbNo
     %   calculateLinearMinEbNo
+    %   calculateGainFromAntennaDiameter
+    %   findLinkMarginIndB
     % The inputs and outputs are known from a previously-provided Excel
     % spreadsheet
     
