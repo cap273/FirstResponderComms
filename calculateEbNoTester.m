@@ -27,19 +27,51 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             %%%%%%%%%%%%%%%%
   
             % Call function to calculate Eb/No
-            actSolution = calculateLinearEbNo(Ptx,Gtx,Grx,slantRange, ...
+            actEbNo = calculateLinearEbNo(Ptx,Gtx,Grx,slantRange, ...
                             radioFreq,Tr,dataRate,atmLoss);
             
             % Define known output
-            expSolution = 12019.73020040390; % Expected Eb/No
+            expEbNo = 12019.73020040390; % Expected Eb/No
             
-            % Verify that expected vs actual answer is within 0.01%
-            testCase.verifyEqual(actSolution,expSolution,'RelTol',0.0001);
+            % Verify that expected vs actual answer is within 0.001%
+            testCase.verifyEqual(actEbNo,expEbNo,'RelTol',0.00001);
+            
+            % Convert calculated Eb/No from linear factor to deciBel
+            dbActEbNo = convertTodBFromLinear(actEbNo);
+            
+            % Define known output in dB
+            dbExpEbNo =  40.79895;
+            
+            % Verify that expected vs actual answer is within 0.001%
+            testCase.verifyEqual(dbActEbNo,dbExpEbNo, ...
+                'RelTol',0.00001);
             
         end
         
-        function test
+        function testMinEbNoCalc(testCase)
             
+            %%%%%%%%%%%%%%%
+            % Define known inputs
+            %%%%%%%%%%%%%%%%
+            
+            dataRate = 100*10^9; % 100 Gbps
+            bandwidth = 10*10^9; % 10 Ghz
+            
+            %%%%%%%%%%%%%%%%
+            
+            % Call function to calculate minimum Eb/No according to Shannon
+            % limit, as a linear factor
+            actEbNoMin = calculateLinearMinEbNo(dataRate,bandwidth);
+            
+            % Convert linear factor to deciBels
+            dbActEbNoMin = convertTodBFromLinear(actEbNoMin);
+            
+            % Define expected minimum Eb/No, in deciBels
+            dBExpEbNoMin = 20.09876;
+            
+            % Verify that expected vs actual answer is within 0.001%
+            testCase.verifyEqual(dbActEbNoMin,dBExpEbNoMin, ...
+                'RelTol',0.00001);
             
         end
     end
