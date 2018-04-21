@@ -15,7 +15,7 @@ function EbNo = calculateLinearEbNo(Ptx,Gtx,Grx,slantRange,radioFreq,Tr,dataRate
 %   Tr: temperature (in Kelvin) of the receiver antenna
 %   dataRate: carrier data rate (in bits per second)
 %   atmLoss: losses due to atmospheric conditions, including any smoke or
-%   foliage
+%       foliage
 
 
     % Calculate losses due to thermal noise
