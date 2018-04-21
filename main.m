@@ -10,6 +10,7 @@
 %% Clear everything
 clc
 clear
+close all
 
 % MATLAB reminder regarding matrix indexing:
 % A(2,4)  -> % Extract the element in row 2, column 4
@@ -49,8 +50,7 @@ clear
 %
 % MATLAB reminder: use square brackets (not curly brackets) to declare a
 % matrix of numbers (as opposed to a cell array). Reference:
-% https://stackoverflow.com/questions/5966817/
-%        difference-between-square-brackets-and-curly-brackets-in-matlab
+% https://stackoverflow.com/questions/5966817/difference-between-square-brackets-and-curly-brackets-in-matlab
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Declare the values of the independent decisions
@@ -78,19 +78,19 @@ diaDispatch = [0.05,0.1,0.2];
 
 %6
 % Frontend Carrier Data Rate (bps) = [Voice, Video]
-frontDataRate = [5000, 100000]; % 5kbps
+frontDataRate = [5000, 100000]; % 5kbps, 100kbps
 
 %7
 % Backhaul Carrier Data Rate (between repeater and dispatch center)
-backhaulDataRate = [100000, 1000000];
+backhaulDataRate = [100000, 1000000]; % 100kbps, 1Mbps
 
 %8 
 % Frontend Available Bandwidth (between radio unit and repeater)
 frontendBandwidth = [6.25*1000]; %6.25 kHz
 
 %9
-% Backhaul Carrier Data Rate (between repeater and dispatch center)
-backhaulBandwidth = [12.5*1000]; %6.25 kHz
+% Backhaul Available Bandwidth (between repeater and dispatch center)
+backhaulBandwidth = [12.5*1000]; %12.5 kHz
 
 %10 
 % Carrier Frequency = [VHF, UHF1, UHF2, 700/800-1, 700/800-2, 700/800-3] (MHz)
@@ -148,8 +148,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % Reference for this solution:
-% https://www.mathworks.com/matlabcentral/answers/
-%           341815-all-possible-combinations-of-three-vectors
+% https://www.mathworks.com/matlabcentral/answers/341815-all-possible-combinations-of-three-vectors
  [c1, c2, c3, c4, c5,...
      c6, c7, c8, c9,...
      c10, c11, c12] = ndgrid(powerRadio,...
@@ -198,8 +197,8 @@ end
 
  
  % TODO: make assumptions on atmospheric losses
-% losses of 10.0, converted to linear value
-atmLoss = convertToLinearFromdb(-10); 
+ % losses of 10.0, converted to linear value
+ atmLoss = convertToLinearFromdb(-10); 
 
  % TODO: make assumptions on horizontal distance to repeater, for radio
  % unit and for dispatch
@@ -283,4 +282,29 @@ atmLoss = convertToLinearFromdb(-10);
                                         additionalMargindB);
      
  end
+ 
+ %% Visualization
+ 
+ % TODO: make sense out of the effect of 12 different decisions into link
+ % margins and other figures of merit
+
+figure
+hold on
+frontendMarginPlot = plot(sort(frontendLinkMargin));
+grid
+set(frontendMarginPlot,'LineWidth',2);
+xlabel('Architectures (ordered by link margin)')
+ylabel('Link Margin, dB')
+title('Frontend Link Margin')
+hold off
+
+figure
+hold on
+frontendMarginPlot = plot(sort(backhaulLinkMargin));
+grid
+set(frontendMarginPlot,'LineWidth',2);
+xlabel('Architectures (ordered by link margin)')
+ylabel('Link Margin, dB')
+title('Backhaul Link Margin')
+hold off
 
