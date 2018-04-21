@@ -14,8 +14,8 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             %%%%%%%%%%%%%%%%
             
             Ptx = 300; % Transmitter Power, in Watts
-            Gtx =  22381.15509176170; % Transmitter Gain, linear value
-            Grx =   3218428.647173230; % Receiver Gain, linear value
+            Gtx = 22381.15509176170; % Transmitter Gain, linear value
+            Grx = 3222886.333213680; % Receiver Gain, linear value
             slantRange = 500*10^3; % 500km
             radioFreq = 38.50*10^9; % 38.50 GHz
             Tr = 200; % Kelvin
@@ -31,7 +31,7 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
                             radioFreq,Tr,dataRate,atmLoss);
             
             % Define known output
-            expEbNo = 12019.73020040390; % Expected Eb/No
+            expEbNo = 12036.37813310590; % Expected Eb/No
             
             % Verify that expected vs actual answer is within 0.001%
             testCase.verifyEqual(actEbNo,expEbNo,'RelTol',0.00001);
@@ -40,7 +40,7 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             dbActEbNo = convertTodBFromLinear(actEbNo);
             
             % Define known output in dB
-            dbExpEbNo =  40.79895;
+            dbExpEbNo = 40.80496;
             
             % Verify that expected vs actual answer is within 0.001%
             testCase.verifyEqual(dbActEbNo,dbExpEbNo, ...
@@ -88,7 +88,7 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             
             %%%%%%%%%%%%%%%%
             
-            % Calculate antenna gain for receiber and transmitter
+            % Calculate antenna gain for receiver and transmitter
             txActGain = calculateGainFromAntennaDiameter(... 
                 apertureEfficiency,txApertureDiameter,radioFreq);
             rxActGain = calculateGainFromAntennaDiameter(... 
@@ -105,6 +105,50 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             testCase.verifyEqual(rxActGain,rxExpGain, ...
                 'RelTol',0.00001);
         end
+        
+        function testLinkMargin(testCase)
+            
+            %%%%%%%%%%%%%%%
+            % Define known inputs
+            %%%%%%%%%%%%%%%%
+            
+            Ptx = 300; % Transmitter Power, in Watts
+            Gtx = 22381.15509176170; % Transmitter Gain, linear value
+            Grx = 3222886.333213680; % Receiver Gain, linear value
+            slantRange = 500*10^3; % 500km
+            radioFreq = 38.50*10^9; % 38.50 GHz
+            Tr = 200; % Kelvin
+            dataRate = 100*10^9; % 100 Gbps
+            bandwidth = 10*10^9; % 10 Ghz
+             
+            % losses of 10.0, converted to linear value
+            atmLoss = convertToLinearFromdb(-10); 
+            
+            %%%%%%%%%%%%%%%%
+            
+            % Call function to calculate Eb/No (as a linear factor)
+            EbNo = calculateLinearEbNo(Ptx,Gtx,Grx,slantRange, ...
+                            radioFreq,Tr,dataRate,atmLoss);
+                        
+            % Call function to calculate minimum Eb/No according to Shannon
+            % limit, as a linear factor
+            EbNoMin = calculateLinearMinEbNo(dataRate,bandwidth);
+            
+            % Define required additional margin over the Shannon limit
+            additionalMargindB = 3;
+            
+            % Calculate actual link margin by calling function
+            actLinkMargindB = findLinkMarginIndB(EbNo, ...
+                    EbNoMin,additionalMargindB);
+
+            % Define expected link margin
+            expLinkMargindB = 17.70620189;
+            
+            % Verify link margin
+            testCase.verifyEqual(actLinkMargindB,expLinkMargindB, ...
+                'RelTol',0.00001);
+            
+        end 
     end
     
 end 
