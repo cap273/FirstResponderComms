@@ -1,11 +1,9 @@
 %% main
-% This script calculates the Link Budget margin for the communications link
-% between:
-%   1. a radio unit and a repeater
-%   2. a dispatch center and a repeater
+% This script calculates certain Figures of Merit for various architectures
+% in a hub-and-spoke network topology.
 %
-% The diagram for a generalized model of the network is located here:
-% https://github.com/cap273/FirstResponderComms/blob/master/GeneralizedModel.png
+% Diagram of the model for the physical dimensions of the network topology:
+% 
 
 %% Clear everything
 clc
@@ -185,17 +183,12 @@ end
  % Make general assumptions
  %%%%%%%%%%%%%%%%%%%%
  
- % Some additional required margin (in deciBels) over the minimum Eb/No
- % according to the Shannon limit
- additionalMargindB = 3;
- 
  % Antenna aperture efficiency (for both dispatch and repeater)
  eff = 0.55;
  
  % Temperature (in Kelvin) of receiving antenna, for all antennas
  Tr = 200;
 
- 
  % TODO: make assumptions on atmospheric losses
  % losses of 10.0, converted to linear value
  atmLoss = convertToLinearFromdb(-10); 
@@ -203,7 +196,7 @@ end
  % TODO: make assumptions on horizontal distance to repeater, for radio
  % unit and for dispatch
  hozDistanceRadio2Repeater = 10000; %10km
- hozDistanceDispatch2Repeater = 3000; %10km
+ hozDistanceDispatch2Repeater = 3000; %3km
  
  
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -274,12 +267,10 @@ end
                                               
      % Calculate link margin for frontend and backhaul links
      frontendLinkMargin(k,1) = findLinkMarginIndB(thisFrontendEbNo, ...
-                                        thisFrontendEbNoMin,...
-                                        additionalMargindB);
+                                        thisFrontendEbNoMin);
      
      backhaulLinkMargin(k,1) = findLinkMarginIndB(thisBackhaulEbNo, ...
-                                        thisBackhaulEbNoMin,...
-                                        additionalMargindB);
+                                        thisBackhaulEbNoMin);
      
  end
  

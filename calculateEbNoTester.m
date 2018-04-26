@@ -61,15 +61,16 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             
             %%%%%%%%%%%%%%%%
             
-            % Call function to calculate minimum Eb/No according to Shannon
-            % limit, as a linear factor
+            % Call function to calculate minimum required Eb/No according 
+            % to Shannon lower bound (plus 3 dB of additional margin as a
+            % safety factor). Function returns a linear (not dB) factor
             actEbNoMin = calculateLinearMinEbNo(dataRate,bandwidth);
             
             % Convert linear factor to deciBels
             dbActEbNoMin = convertTodBFromLinear(actEbNoMin);
             
             % Define expected minimum Eb/No, in deciBels
-            dBExpEbNoMin = 20.09876;
+            dBExpEbNoMin = 23.09876;
             
             % Verify that expected vs actual answer is within 0.001%
             testCase.verifyEqual(dbActEbNoMin,dBExpEbNoMin, ...
@@ -132,16 +133,13 @@ classdef calculateEbNoTester < matlab.unittest.TestCase
             EbNo = calculateLinearEbNo(Ptx,Gtx,Grx,slantRange, ...
                             radioFreq,Tr,dataRate,atmLoss);
                         
-            % Call function to calculate minimum Eb/No according to Shannon
-            % limit, as a linear factor
+            % Call function to calculate minimum required Eb/No according 
+            % to Shannon limit, as a linear factor
             EbNoMin = calculateLinearMinEbNo(dataRate,bandwidth);
-            
-            % Define required additional margin over the Shannon limit
-            additionalMargindB = 3;
-            
+
             % Calculate actual link margin by calling function
             actLinkMargindB = findLinkMarginIndB(EbNo, ...
-                    EbNoMin,additionalMargindB);
+                                                 EbNoMin);
 
             % Define expected link margin
             expLinkMargindB = 17.70620189;
