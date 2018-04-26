@@ -3,15 +3,25 @@
 % in a hub-and-spoke network topology.
 %
 % Diagram of the model for the physical dimensions of the network topology:
-% 
+% https://github.com/cap273/FirstResponderComms/blob/master/HubAndSpoke-SlantRange.png
+%
+% Diagram of the model for the various communications links, and their
+% relates Figures of Merit:
+% https://github.com/cap273/FirstResponderComms/blob/master/HubAndSpoke-CommLinks.png
 
 %% Clear everything
 clc
 clear
 close all
 
-% MATLAB reminder regarding matrix indexing:
+%% MATLAB Reminders
+% Regarding matrix indexing:
 % A(2,4)  -> % Extract the element in row 2, column 4
+%
+% Use square brackets (not curly brackets) to declare a
+% matrix of numbers (as opposed to a cell array). Reference:
+% https://stackoverflow.com/questions/5966817/difference-between-square-brackets-and-curly-brackets-in-matlab
+
 
 %% Architecture Enumeration
 % Create an M x N matrix, where each row in the matrix represents one 
@@ -45,10 +55,6 @@ close all
 % for the j'th corresponding decision listed above. For example, the
 % matrix's 6th column contains data on the Frontend Carrier Data Rate
 % (which is listed under number 6)
-%
-% MATLAB reminder: use square brackets (not curly brackets) to declare a
-% matrix of numbers (as opposed to a cell array). Reference:
-% https://stackoverflow.com/questions/5966817/difference-between-square-brackets-and-curly-brackets-in-matlab
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Declare the values of the independent decisions
