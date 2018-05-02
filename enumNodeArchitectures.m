@@ -168,9 +168,9 @@ subsetArchs = allcomb(nodeStructure.PurchaseCost,...
                             nodeStructure.VerticalHeight);
 
 %% Enumeration of all possible architectures (for this node option)
-% Now take the cross join (or the cartesian product) of all intermediary
-% matrices to find the overall set of possible architectures for this node
-% Now take the cross join of all the matrices
+% Now take the cross join (aka the cartesian product) of all intermediary
+% matrices to find the overall set of possible architectures for this [node
+% option]
 archMatrix = recursiveCrossJoin(subsetArchs,tmp1,tmp2,tmp3);
 
 % Convert the matrix of all possible architectures into a table. This way,
