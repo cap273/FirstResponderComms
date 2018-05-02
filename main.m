@@ -467,6 +467,8 @@ end
 % vertically concatenate these matrices to produce a single matrix. This
 % single matrix now enumerates all possible architectures for this node
 % type.
+% Diagram for this process: 
+% https://github.com/cap273/FirstResponderComms/blob/master/verticalConcatOptionsAcrossNodeType.png
 subsetArchsPortableRadios = vertcat(portableRadioTypesMatrices{1,:});
 
 % This matrix still contains 10 columns. Create table to carry 
