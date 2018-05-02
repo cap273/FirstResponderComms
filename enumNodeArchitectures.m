@@ -2,6 +2,8 @@ function [archMatrix,archTable] = enumNodeArchitectures(nodeStructure,gainType)
 %findPossibleArchitectures Enumerate architectures for one node type.
 %   Returns a matrix of all enumerated architectures for one given node
 %   structure.
+%   Visual representation of this funciton:
+%   https://github.com/cap273/FirstResponderComms/blob/master/enumNodeArchitecturesDiagram.png    
 %   
 %   OUTPUTS:
 %       archMatrix:
