@@ -413,10 +413,10 @@ dispatchTypes{1,3} = struct('Name',thisOptionName,...
 % Frontend Carrier Data Rate
 
 %%%% USER INPUT:
-frontDataRate = [5000, 100000]; % 5kbps, 100kbps
+frontDataRate = 5000; % 5kbps, 100kbps
 
 % Backhaul Carrier Data Rate (between repeater and dispatch center)
-backhaulDataRate = [100000, 1000000]; % 100kbps, 1Mbps
+backhaulDataRate = 100000; % 100kbps
 
 % Frontend Available Bandwidth (between radio unit and repeater)
 frontendBandwidth = [6.25*1000]; %6.25 kHz
@@ -925,3 +925,15 @@ ylabel('Link Margin, dB')
 title('Frontend Link Margin vs TCO')
 hold off
 
+for i = 1:1:35
+    figure
+    hold on
+    gscatter(totalCost(:,4),backhaulLinkMargins(:,1),architectures(:,i));
+    xlabel('Total Cost of Ownership over 15 years (USD)')
+    ylabel('Link Margin, dB')
+    
+    thisGrouping = architecturesTable.Properties.VariableNames{i};
+    
+    title(['Backhaul Link Margin vs TCO,ordered by ' thisGrouping])
+    hold off
+end
