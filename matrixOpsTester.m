@@ -68,7 +68,7 @@ classdef matrixOpsTester < matlab.unittest.TestCase
             % Define test inputs for one option of one node type
             %%%%%%%%%%%%%%%%
             
-            thisOptionName = "Regular Handheld Radio";
+            thisOptionName = 'Regular Handheld Radio';
             thisOptionPurchaseCost = 1800;
             thisOptionMaintenanceCostPerYear = 90;
             thisOptionExpectedUsableLifeInYears = 7;
@@ -107,7 +107,7 @@ classdef matrixOpsTester < matlab.unittest.TestCase
             %%%%%%%%%%%%%%%%
             
             [archMatrix,archTable] = enumNodeArchitectures(...
-                                thisPortableRadioType,"linearGain");
+                                thisPortableRadioType,'linearGain');
             
             [actNr,actNc] = size(archTable); % Dimensions of actual table
             

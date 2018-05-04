@@ -12,6 +12,5 @@ testCase1 = calculateEbNoTester;
 res1 = run(testCase1) %#ok<NOPTS>
 
 %% Run matrixOpsTester unit test
-
 testCase2 = matrixOpsTester;
 res2 = run(testCase2) %#ok<NOPTS>
