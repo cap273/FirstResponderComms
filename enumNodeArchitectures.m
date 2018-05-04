@@ -18,10 +18,10 @@ function [archMatrix,archTable] = enumNodeArchitectures(nodeStructure,gainType)
 %   INPUT:
 %       gainType:
 %           either:
-%               - "antennaDiameter", indicating that the input 
+%               - 'antennaDiameter', indicating that the input 
 %                   "nodeStructure" contains the diameter of its Rx and Tx
 %                   antenna, OR
-%               - "linearGain", indicating that the input "nodeStructure" 
+%               - 'linearGain', indicating that the input "nodeStructure" 
 %                    contains the gain of its Rx and Tx antenna as a linear
 %                    factor
 %       nodeStructure:
@@ -88,7 +88,7 @@ function [archMatrix,archTable] = enumNodeArchitectures(nodeStructure,gainType)
 % Get the name of this node type, removing all spaces
 nodeName = regexprep(nodeStructure.Name, '\s+', '');
 
-if gainType == "antennaDiameter"
+if strcmp(gainType,'antennaDiameter')
     
     % Access the appropriate field of the input nodeStructure
     rxAntennaDiameterOrGainValues = nodeStructure.RxAntennaDiameterValues;
@@ -98,7 +98,7 @@ if gainType == "antennaDiameter"
     rxAntennaTableName = 'RxAntennaDiameterValues';
     txAntennaTableName = 'TxAntennaDiameterValues';
            
-elseif gainType == "linearGain"
+elseif strcmp(gainType,'linearGain')
     
     % Access the appropriate field of the input nodeStructure
     rxAntennaDiameterOrGainValues = nodeStructure.RxGainValues;

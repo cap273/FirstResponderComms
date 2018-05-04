@@ -106,7 +106,7 @@ portableRadioTypesMatrices = cell(1,numberOfPortableRadioTypes);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 1
 
 %%%% USER INPUT:
-thisOptionName = "Regular Handheld Radio";
+thisOptionName = 'Regular Handheld Radio';
 thisOptionPurchaseCost = 1800;
 thisOptionMaintenanceCostPerYear = 90;
 thisOptionExpectedUsableLifeInYears = 7;
@@ -172,7 +172,7 @@ repeaterTypesMatrices = cell(1,numberOfRepeaterTypes);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 1 Repeaters (Node 2)
 
 %%%% USER INPUT:
-thisOptionName = "Portable Repeater On Ground";
+thisOptionName = 'Portable Repeater On Ground';
 thisOptionPurchaseCost = 2500;
 thisOptionMaintenanceCostPerYear = 1250;
 thisOptionExpectedUsableLifeInYears = 10;
@@ -194,7 +194,7 @@ repeaterTypes{1,1} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 2 Repeaters (Node 2)
 
 %%%% USER INPUT:
-thisOptionName = "Portable Repeater On UAS";
+thisOptionName = 'Portable Repeater On UAS';
 thisOptionPurchaseCost = 2500;
 thisOptionMaintenanceCostPerYear = 1250;
 thisOptionExpectedUsableLifeInYears = 10;
@@ -216,7 +216,7 @@ repeaterTypes{1,2} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 3 Repeaters (Node 2)
 
 %%%% USER INPUT:
-thisOptionName = "Tower Mounted Repeater Low";
+thisOptionName = 'Tower Mounted Repeater Low';
 thisOptionPurchaseCost = 29025;
 thisOptionMaintenanceCostPerYear = 4354;
 thisOptionExpectedUsableLifeInYears = 20;
@@ -238,7 +238,7 @@ repeaterTypes{1,3} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 4 Repeaters (Node 2)
 
 %%%% USER INPUT:
-thisOptionName = "Tower Mounted Repeater High";
+thisOptionName = 'Tower Mounted Repeater High';
 thisOptionPurchaseCost = 29025;
 thisOptionMaintenanceCostPerYear = 4354;
 thisOptionExpectedUsableLifeInYears = 20;
@@ -261,7 +261,7 @@ repeaterTypes{1,4} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 5 Repeaters (Node 2)
 
 %%%% USER INPUT:
-thisOptionName = "Satellite Constellation Repeater Low";
+thisOptionName = 'Satellite Constellation Repeater Low';
 thisOptionPurchaseCost = 0; % No CapEx in renting satellites
 thisOptionMaintenanceCostPerYear = 51120;
 thisOptionExpectedUsableLifeInYears = 15;
@@ -283,7 +283,7 @@ repeaterTypes{1,5} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 5 Repeaters (Node 2)
 
 %%%% USER INPUT:
-thisOptionName = "Satellite Constellation Repeater High";
+thisOptionName = 'Satellite Constellation Repeater High';
 thisOptionPurchaseCost = 0; % No CapEx in renting satellites
 thisOptionMaintenanceCostPerYear = 51120;
 thisOptionExpectedUsableLifeInYears = 15;
@@ -329,7 +329,7 @@ dispatchTypesMatrices = cell(1,numberOfDispatchTypes);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 1 Dispatch (Node 3)
 
 %%%% USER INPUT:
-thisOptionName = "Dispatch Low Transmit Power";
+thisOptionName = 'Dispatch Low Transmit Power';
 thisOptionPurchaseCost = 145125;
 thisOptionMaintenanceCostPerYear = 45453;
 thisOptionExpectedUsableLifeInYears = 20;
@@ -355,7 +355,7 @@ dispatchTypes{1,1} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 2 Dispatch (Node 3)
 
 %%%% USER INPUT:
-thisOptionName = "Dispatch Medium Transmit Power";
+thisOptionName = 'Dispatch Medium Transmit Power';
 thisOptionPurchaseCost = 181400;
 thisOptionMaintenanceCostPerYear = 52767;
 thisOptionExpectedUsableLifeInYears = 20;
@@ -381,7 +381,7 @@ dispatchTypes{1,2} = struct('Name',thisOptionName,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Option 3 Dispatch (Node 3)
 
 %%%% USER INPUT:
-thisOptionName = "Dispatch High Transmit Power";
+thisOptionName = 'Dispatch High Transmit Power';
 thisOptionPurchaseCost = 464400;
 thisOptionMaintenanceCostPerYear = 69660;
 thisOptionExpectedUsableLifeInYears = 20;
@@ -460,7 +460,7 @@ for k = 1:1:numberOfPortableRadioTypes
     % Also note that this node type specifies a linear gain (as it is a
     % wire antenna), and does not specify antenna diameter
     [portableRadioTypesMatrices{1,k},~] = ...
-        enumNodeArchitectures(portableRadioTypes{1,k},"linearGain");
+        enumNodeArchitectures(portableRadioTypes{1,k},'linearGain');
 end
 
 % Once all architecture matrices for each option has been retrieved,
@@ -511,7 +511,7 @@ for k = 1:1:numberOfRepeaterTypes
     % of a linear gain). The linear gain can be calculated from the antenna
     % diameter
     [repeaterTypesMatrices{1,k},~] = ...
-        enumNodeArchitectures(repeaterTypes{1,k},"antennaDiameter");
+        enumNodeArchitectures(repeaterTypes{1,k},'antennaDiameter');
 end
 
 % Vertically concatenate to produce architecture enumeration for all
@@ -558,7 +558,7 @@ for k = 1:1:numberOfDispatchTypes
     % of a linear gain). The linear gain can be calculated from the antenna
     % diameter
     [dispatchTypesMatrices{1,k},~] = ...
-        enumNodeArchitectures(dispatchTypes{1,k},"antennaDiameter");
+        enumNodeArchitectures(dispatchTypes{1,k},'antennaDiameter');
 end
 
 % Vertically concatenate to produce architecture enumeration for all
