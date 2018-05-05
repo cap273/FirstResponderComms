@@ -114,19 +114,19 @@ verticalHeight = 0;
 
 % Receiver (Rx) Gain values (as linear factors) and cost multipliers
 % Since this is a WIRE antenna, use gain values (instead of antenna sizes)
-rxGainValuesArray = [convertToLinearFromdb(10),... % 10 dB
-                     convertToLinearFromdb(25)];   % 25 dB
-rxGainCostMultiplierArray = [1,1.5];
+rxGainValuesArray = [convertToLinearFromdb(0),... % 0 dB
+                     convertToLinearFromdb(3)];   % 3 dB
+rxGainCostMultiplierArray = [1,1.25];
 
 % Transmitter (Tx) Gain values (as linear factors) and cost multipliers
 % Since this is a WIRE antenna, use gain values (instead of antenna sizes)
-txGainValuesArray = [convertToLinearFromdb(10),... % 10 dB
-                     convertToLinearFromdb(25)];   % 25 dB
-txGainCostMultiplierArray = [1,1.5];
+txGainValuesArray = [convertToLinearFromdb(0),... % 0 dB
+                     convertToLinearFromdb(3)];   % 3 dB
+txGainCostMultiplierArray = [1,1.25];
 
 % Transmitter (Tx) Power values (as Watts) and cost multipliers
-txPowerValuesArray = [6,25,45]; %6W, 25W, 45W
-txPowerCostMultiplierArray = [1,1.25,1.5];
+txPowerValuesArray = [1,3,6]; %1W,3W,6W
+txPowerCostMultiplierArray = [1,1.5,2];
 
 %%% INTERMEDIATE VARIABLES:
 portableRadioTypes{1,1} = struct('Name',thisOptionName,...
@@ -155,15 +155,15 @@ numberOfRepeaterTypes = 6;
 
 % Repeater Antenna Aperture for Tx (in meters)
 diaRepeaterTx = [0.1,0.2,0.5];
-txGainCostMultiplierArray = [1,1.25,2];
+txGainCostMultiplierArray = [1,1.2,1.5];
 
 % Repeater Antenna Aperture for Rx (in meters)
 diaRepeaterRx = [0.1,0.2,0.5];
-rxGainCostMultiplierArray = [1,1.25,2];
+rxGainCostMultiplierArray = [1,1.2,1.5];
 
 % Repeater Tx Power Options (in Watts)
-txPowerRepeater = [6,25,45];
-txPowerCostMultiplierArray = [1,2,3];
+txPowerRepeater = [45,100,200];
+txPowerCostMultiplierArray = [1,1.4,1.8];
 
 %%% INTERMEDIATE VARIABLES:
 repeaterTypes = cell(1,numberOfRepeaterTypes);
@@ -195,10 +195,11 @@ repeaterTypes{1,1} = struct('Name',thisOptionName,...
 
 %%%% USER INPUT:
 thisOptionName = 'Portable Repeater On UAS';
-thisOptionPurchaseCost = 2500;
-thisOptionMaintenanceCostPerYear = 1250;
+thisOptionPurchaseCost = 9300;
+thisOptionMaintenanceCostPerYear = 2270;
 thisOptionExpectedUsableLifeInYears = 10;
 verticalHeight = 10; % (in meters)
+
 
 %%% INTERMEDIATE VARIABLES:
 repeaterTypes{1,2} = struct('Name',thisOptionName,...
@@ -263,7 +264,7 @@ repeaterTypes{1,4} = struct('Name',thisOptionName,...
 %%%% USER INPUT:
 thisOptionName = 'Satellite Constellation Repeater Low';
 thisOptionPurchaseCost = 0; % No CapEx in renting satellites
-thisOptionMaintenanceCostPerYear = 51120;
+thisOptionMaintenanceCostPerYear = 66120; % Annual use and percenatge of annual maintenance
 thisOptionExpectedUsableLifeInYears = 15;
 verticalHeight = 300*1000; % (in meters)
 
@@ -285,7 +286,7 @@ repeaterTypes{1,5} = struct('Name',thisOptionName,...
 %%%% USER INPUT:
 thisOptionName = 'Satellite Constellation Repeater High';
 thisOptionPurchaseCost = 0; % No CapEx in renting satellites
-thisOptionMaintenanceCostPerYear = 51120;
+thisOptionMaintenanceCostPerYear = 66120; %Annual use and percenatge of annual maintenanc
 thisOptionExpectedUsableLifeInYears = 15;
 verticalHeight = 400*1000; % (in meters)
 
@@ -315,12 +316,12 @@ repeaterTypes{1,6} = struct('Name',thisOptionName,...
 numberOfDispatchTypes = 3;
 
 % Dispatch Center Antenna Apeture for Tx (in meters)
-diaDispatchTx = [0.05,0.1,0.2]; 
-txGainCostMultiplierArray = [1,1.25,2];
+diaDispatchTx = [0.5,1,2]; 
+txGainCostMultiplierArray = [1,2,4];
 
 % Dispatch Center Antenna Apeture for Rx (in meters)
-diaDispatchRx = [0.05,0.1,0.2]; 
-rxGainCostMultiplierArray = [1,1.25,2];
+diaDispatchRx = [0.5,1,2]; 
+rxGainCostMultiplierArray = [1,2,4];
 
 %%% INTERMEDIATE VARIABLES:
 dispatchTypes = cell(1,numberOfDispatchTypes);
@@ -363,7 +364,7 @@ verticalHeight = 0; % (in meters)
 
 % Dispatch Center Tx Power Options (in Watts)
 powerDispatch = 100;
-txPowerCostMultiplierArray = 1.1;
+txPowerCostMultiplierArray = 1;
 
 %%% INTERMEDIATE VARIABLES:
 dispatchTypes{1,2} = struct('Name',thisOptionName,...
@@ -389,7 +390,7 @@ verticalHeight = 0; % (in meters)
 
 % Dispatch Center Tx Power Options (in Watts)
 powerDispatch = 200;
-txPowerCostMultiplierArray = 1.2;
+txPowerCostMultiplierArray = 1;
 
 %%% INTERMEDIATE VARIABLES:
 dispatchTypes{1,3} = struct('Name',thisOptionName,...
@@ -413,7 +414,7 @@ dispatchTypes{1,3} = struct('Name',thisOptionName,...
 % Frontend Carrier Data Rate
 
 %%%% USER INPUT:
-frontDataRate = 5000; % 5kbps, 100kbps
+frontDataRate = 5000; % 5kbps
 
 % Backhaul Carrier Data Rate (between repeater and dispatch center)
 backhaulDataRate = 100000; % 100kbps
@@ -665,15 +666,12 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  
  % Antenna aperture efficiency (for both dispatch and repeater)
  eff = 0.55;
- 
- % Temperature (in Kelvin) of receiving antenna, for all antennas
- Tr = 300;
 
  % TODO: make assumptions on atmospheric losses
  % losses of 10.0, converted to linear value
  atmLoss = convertToLinearFromdb(-10); 
 
- % TODO: make assumptions on horizontal distance to repeater, for radio
+ % Make assumptions on horizontal distance to repeater, for radio
  % unit and for dispatch
  hozDistanceRadio2Repeater = 10000; %10km
  hozDistanceDispatch2Repeater = 3000; %3km
@@ -722,8 +720,28 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      % radio units are at vertical height = 0
      thisHeightToRepeater = architectures(k,24); 
      
+     % Temperature (in Kelvin) of receiving antenna, for all spoke (i.e.
+     % non-repeater) nodes
+     TrSpoke = 290;
+     
+     % Temperature (in Kelvin) of receiving antenna, for hub (i.e.
+     % repeater) nodes. Might be dependent on whether the repeater is in the
+     % atmosphere (ground-based or aerial-based repeater) or whether it is
+     % a space-based repeater
+     if architectures(k,24) > (160*1000)
+        % If this repeater has a vertical height of more than 160km, then
+        % consider it a space-based repeater.
+        % From Wikipedia: "Objects below approximately 160 km (99 mi) will 
+        % experience very rapid orbital decay and altitude loss due to 
+        % atmospheric drag."
+        % https://en.wikipedia.org/wiki/Low_Earth_orbit
+        TrHub = 290;
+     else
+        TrHub = 290;
+     end
+     
      % Calculate slant range based on assumed horizontal range, and on this
-     % particular architecture's vertical height
+     % particular architecture's vertical height to the repeater
      thisSlantRangeRadioToRepeater = sqrt(hozDistanceRadio2Repeater^2 ...
                                     + thisHeightToRepeater^2);
      thisSlantRangeDispatchToRepeater = sqrt(hozDistanceDispatch2Repeater^2 ...
@@ -751,7 +769,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
                             thisGainRepeaterRx,...
                             thisSlantRangeRadioToRepeater,...
                             thisCarrierFrequency,...
-                            Tr,...
+                            TrHub,...
                             thisFrontDataRate,...
                             atmLoss);
      
@@ -761,7 +779,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
                             thisGainRadioRx,...
                             thisSlantRangeRadioToRepeater,...
                             thisCarrierFrequency,...
-                            Tr,...
+                            TrSpoke,...
                             thisFrontDataRate,...
                             atmLoss);
      
@@ -781,7 +799,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
                             thisGainRepeaterRx,...
                             thisSlantRangeDispatchToRepeater,...
                             thisCarrierFrequency,...
-                            Tr,...
+                            TrHub,...
                             thisBackhaulDataRate,...
                             atmLoss);
                         
@@ -791,7 +809,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
                             thisGainDispatchRx,...
                             thisSlantRangeDispatchToRepeater,...
                             thisCarrierFrequency,...
-                            Tr,...
+                            TrSpoke,...
                             thisBackhaulDataRate,...
                             atmLoss);
                         
@@ -890,9 +908,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  
  %% Visualization
  
- % TODO: make sense out of the effect of 12 different decisions into link
- % margins and other figures of merit
-
+%{
 figure
 hold on
 frontendMarginPlot = plot(sort(frontendLinkMargins(:,1)));
@@ -924,16 +940,73 @@ xlabel('Total Cost of Ownership over 15 years (USD)')
 ylabel('Link Margin, dB')
 title('Frontend Link Margin vs TCO')
 hold off
+%}
+
+% Define 35-by-1 array defining the architecture properties of interest to
+% plot
+propertiesOfInterest = [0    %PortableRadioPurchaseCost
+                        0    %PortableRadioMaintenanceCostPerYear
+                        0   %PortableRadioExpectedUsableLifeInYears
+                        0    %PortableRadioVerticalHeight
+                        1    %PortableRadioRxGainValues
+                        0    %PortableRadioRxGainCostMultiplier
+                        1    %PortableRadioTxGainValues
+                        0    %PortableRadioTxGainCostMultiplier
+                        1    %PortableRadioTxPowerValues
+                        0    %PortableRadioTxPowerCostMultiplier
+                        0    %RepeaterPurchaseCost
+                        0    %RepeaterMaintenanceCostPerYear
+                        0    %RepeaterExpectedUsableLifeInYears
+                        1    %RepeaterVerticalHeight
+                        1    %RepeaterRxAntennaDiameterValues
+                        0    %RepeaterRxGainCostMultiplier
+                        1    %RepeaterTxAntennaDiameterValues
+                        0    %RepeaterTxGainCostMultiplier
+                        1    %RepeaterTxPowerValues
+                        0    %RepeaterTxPowerCostMultiplier
+                        0    %DispatchPurchaseCost
+                        0    %DispatchMaintenanceCostPerYear
+                        0    %DispatchExpectedUsableLifeInYears
+                        0    %DispatchVerticalHeight
+                        1    %DispatchRxAntennaDiameterValues
+                        0    %DispatchRxGainCostMultiplier
+                        1    %DispatchTxAntennaDiameterValues
+                        0    %DispatchTxGainCostMultiplier
+                        1    %DispatchTxPowerValues
+                        0    %DispatchTxPowerCostMultiplier
+                        1    %FrontDataRate
+                        1    %BackhaulDataRate
+                        1    %FrontendBandwidth
+                        1    %BackhaulBandwidth
+                        1];  %carrierFrequency
 
 for i = 1:1:35
-    figure
-    hold on
-    gscatter(totalCost(:,4),backhaulLinkMargins(:,1),architectures(:,i));
-    xlabel('Total Cost of Ownership over 15 years (USD)')
-    ylabel('Link Margin, dB')
     
-    thisGrouping = architecturesTable.Properties.VariableNames{i};
+    % Plot Frontend Link Margins
+    if propertiesOfInterest(i)
+        figure
+        hold on
+        gscatter(totalCost(:,4),frontendLinkMargins(:,1),architectures(:,i));
+        xlabel('Total Cost of Ownership over 15 years (USD)')
+        ylabel('Link Margin, dB')
+
+        thisGrouping = architecturesTable.Properties.VariableNames{i};
+
+        title(['Frontend Link Margin vs TCO, ordered by ' thisGrouping])
+        hold off
+    end
     
-    title(['Backhaul Link Margin vs TCO,ordered by ' thisGrouping])
-    hold off
+    % Plot Backhaul Link Margins
+    if propertiesOfInterest(i)
+        figure
+        hold on
+        gscatter(totalCost(:,4),backhaulLinkMargins(:,1),architectures(:,i));
+        xlabel('Total Cost of Ownership over 15 years (USD)')
+        ylabel('Link Margin, dB')
+
+        thisGrouping = architecturesTable.Properties.VariableNames{i};
+
+        title(['Backhaul Link Margin vs TCO, ordered by ' thisGrouping])
+        hold off
+    end
 end

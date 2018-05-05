@@ -32,13 +32,14 @@ end
 function thermalNoiseLoss = calculateLossThermalNoise(Tr,dataRate)
 %calculateNoiseDensity Calculate loss due to thermal noise on the receiver 
 %antenna
-%   Tx: temperature (in Kelvin) of the receiver antenna
+%   Tr: temperature (in Kelvin) of the receiver antenna
 %   dataRate: carrier data rate (in bits per second)
 
     % Define Boltzmann constant, in SI base units (mks)
     kb = 1.38064852 * 10^(-23);
 
-    % Calculate noise density
+    % Calculate thermal noise density
+    % https://en.wikipedia.org/wiki/Noise_spectral_density
     Nd = kb*Tr;
 
     % Calculate thermal noise loss
