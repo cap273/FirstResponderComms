@@ -946,7 +946,7 @@ hold off
 % plot
 propertiesOfInterest = [0    %PortableRadioPurchaseCost
                         0    %PortableRadioMaintenanceCostPerYear
-                        0   %PortableRadioExpectedUsableLifeInYears
+                        0    %PortableRadioExpectedUsableLifeInYears
                         0    %PortableRadioVerticalHeight
                         1    %PortableRadioRxGainValues
                         0    %PortableRadioRxGainCostMultiplier
@@ -981,12 +981,14 @@ propertiesOfInterest = [0    %PortableRadioPurchaseCost
                         1];  %carrierFrequency
 
 for i = 1:1:35
-    
+   
     % Plot Frontend Link Margins
     if propertiesOfInterest(i)
         figure
         hold on
         gscatter(totalCost(:,4),frontendLinkMargins(:,1),architectures(:,i));
+        xlim([0 3*10^7])
+        ylim([0 70])
         xlabel('Total Cost of Ownership over 15 years (USD)')
         ylabel('Link Margin, dB')
 
@@ -995,12 +997,14 @@ for i = 1:1:35
         title(['Frontend Link Margin vs TCO, ordered by ' thisGrouping])
         hold off
     end
-    
+   
     % Plot Backhaul Link Margins
     if propertiesOfInterest(i)
         figure
         hold on
         gscatter(totalCost(:,4),backhaulLinkMargins(:,1),architectures(:,i));
+        xlim([0 3*10^7])
+        ylim([0 70])
         xlabel('Total Cost of Ownership over 15 years (USD)')
         ylabel('Link Margin, dB')
 
