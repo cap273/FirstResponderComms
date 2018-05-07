@@ -1144,39 +1144,39 @@ propertiesOfInterest = [0    %PortableRadioPurchaseCost
 
 for i = 1:1:35
    
-    % Plot Best Case Frontend Link Margins
-    if propertiesOfInterest(i)
-        figure
-        hold on
-        gscatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),architectures(:,i));
-        xlim([0 3*10^7])
-        ylim([0 70])
-        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
-        ylabel('Link Margin, dB')
-
-        thisGrouping = architecturesTable.Properties.VariableNames{i};
-
-        title({'Best Case Frontend Link Margin vs TCO';...
-                    ['ordered by ' thisGrouping]})
-        hold off
-    end
-   
-    % Plot Best Case Backhaul Link Margins
-    if propertiesOfInterest(i)
-        figure
-        hold on
-        gscatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),architectures(:,i));
-        xlim([0 3*10^7])
-        ylim([0 70])
-        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
-        ylabel('Link Margin, dB')
-
-        thisGrouping = architecturesTable.Properties.VariableNames{i};
-
-        title({'Best Case Backhaul Link Margin vs TCO';...
-                    ['ordered by ' thisGrouping]})
-        hold off
-    end
+%     % Plot Best Case Frontend Link Margins
+%     if propertiesOfInterest(i)
+%         figure
+%         hold on
+%         gscatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),architectures(:,i));
+%         xlim([0 3*10^7])
+%         ylim([0 70])
+%         xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+%         ylabel('Link Margin, dB')
+% 
+%         thisGrouping = architecturesTable.Properties.VariableNames{i};
+% 
+%         title({'Best Case Frontend Link Margin vs TCO';...
+%                     ['ordered by ' thisGrouping]})
+%         hold off
+%     end
+%    
+%     % Plot Best Case Backhaul Link Margins
+%     if propertiesOfInterest(i)
+%         figure
+%         hold on
+%         gscatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),architectures(:,i));
+%         xlim([0 3*10^7])
+%         ylim([0 70])
+%         xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+%         ylabel('Link Margin, dB')
+% 
+%         thisGrouping = architecturesTable.Properties.VariableNames{i};
+% 
+%         title({'Best Case Backhaul Link Margin vs TCO';...
+%                     ['ordered by ' thisGrouping]})
+%         hold off
+%     end
     
     % Plot Worst Case Frontend Link Margins
     if propertiesOfInterest(i)
