@@ -3,7 +3,11 @@ function s2 = calculatePropagationPath(s1,v1,v2,h1,h2)
 %smoke/fire or through foliage.
 %
 %   Model for calculations:
-%       https://github.com/cap273/FirstResponderComms/blob/master/propagationPathCalculation.png
+%   Case A: v2 = v3
+%       https://github.com/cap273/FirstResponderComms/blob/master/propagationPathCalculationCaseA.png
+%       
+%   Case B: v2 > v3
+%       https://github.com/cap273/FirstResponderComms/blob/master/propagationPathCalculationCaseB.png
 %   
 %   OUTPUTS:
 %       s2: the propagation path through fire/smoke or through
@@ -17,11 +21,35 @@ function s2 = calculatePropagationPath(s1,v1,v2,h1,h2)
 %       h2: the maximum horizontal distance of foliage or smoke/fire cover 
 %           between the spoke to the repeater
 
+
+% If inputted h2 is greater than h1, do calculations as if h2=h1
+if h2>h1
+    h2=h1;
+end
+
 % Find the sine of the triangle
 sinTheta = v1/s1;
 
-% Find propagation path, as both triangles are similar to each other
-s2 = v2/sinTheta;
+% Find angle theta (in degrees)
+theta = asind(sinTheta);
+
+% Find the Tangent of theta (where the input of theta is in degrees)
+tanTheta = tand(theta);
+
+if h2*tanTheta > v2
+    %   Case A: v2 = v3
+    %   https://github.com/cap273/FirstResponderComms/blob/master/propagationPathCalculationCaseA.png
+    v3 = v2;
+    
+else
+    %   Case B: v2 > v3
+    %   https://github.com/cap273/FirstResponderComms/blob/master/propagationPathCalculationCaseB.png
+    
+    v3 = h2*tanTheta;
+end
+
+% Find propagation path
+s2 = v3*sinTheta;
 
 end
 
