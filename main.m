@@ -667,15 +667,21 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  % Antenna aperture efficiency (for both dispatch and repeater)
  eff = 0.55;
 
- % TODO: make assumptions on atmospheric losses
- % losses of 10.0, converted to linear value
- atmLoss = convertToLinearFromdb(-10); 
-
- % Make assumptions on horizontal distance to repeater, for radio
- % unit and for dispatch
+ % Horizontal distance to repeater, for radio unit and for dispatch
  hozDistanceRadio2Repeater = 10000; %10km
  hozDistanceDispatch2Repeater = 3000; %3km
  
+ % Define some amount of atmospheric loss under best-case conditions (i.e.
+ % without considering propagation losses through fire/smoke or foliage)
+ bestCaseAtmLoss = convertToLinearFromdb(0);
+ 
+ % Maximum height of foliage cover (in meters)
+ % Reference: https://github.com/cap273/FirstResponderComms/blob/master/foliageLossModel.png
+ foliageCoverHeight = 12.5; %12.5 meters
+ 
+ % Maximum height of smoke/fire cover (in meters)
+ % Reference: https://github.com/cap273/FirstResponderComms/blob/master/fireLossModel.png
+ fireCoverHeight = 1000; %1km
  
 %%%%%%%%%%%%%%%%%%%%%%%
 % Calculate link margin for frontend (between repeater and radio unit)
@@ -690,11 +696,58 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  %  - Column 3 is the link margin from the repeater (i.e. the "hub") to one
  %              of the "spokes" (i.e. radio unit or dispatch center)
  %  - Column 1 is the minimum of column 2 and column 3
- frontendLinkMargins = zeros(NUM_POSSIBLE_ARCHS,3);
- backhaulLinkMargins = zeros(NUM_POSSIBLE_ARCHS,3);
+ % These are BEST CASE scenarios (i.e. without taking into account
+ % propagation path losses due to smoke/fire or foliage)
+ bestCaseFrontendLinkMargins = zeros(NUM_POSSIBLE_ARCHS,3);
+ bestCaseBackhaulLinkMargins = zeros(NUM_POSSIBLE_ARCHS,3);
+ 
+ 
+  % Initialize matrix for frontend and backend link margins, where:
+ %  - Each row corresponds to one possible architecture
+ %  - Column 2 is the link margin from a "spoke" (i.e. radio unit or 
+ %              dispatch center links) to a "hub" (i.e. the repeater)
+ %  - Column 3 is the link margin from the repeater (i.e. the "hub") to one
+ %              of the "spokes" (i.e. radio unit or dispatch center)
+ %  - Column 1 is the minimum of column 2 and column 3
+ % These are WORST CASE scenarios (i.e. including propagation path losses 
+ % due to smoke/fire or foliage)
+ worstCaseFrontendLinkMargins = zeros(NUM_POSSIBLE_ARCHS,3);
+ worstCaseBackhaulLinkMargins = zeros(NUM_POSSIBLE_ARCHS,3);
+ 
+ 
+ % Initialize matrix for propagation path losses 
+ % (for possible future analysis), where:
+ %  - Each row corresponds to one possible architecture
+ %  - Column 1 is worst-case propagation path loss due to smoke/fire for
+ %              portable radio to repeater
+ %  - Column 2 is worst-case propagation path loss due to foliage for
+ %              portable radio to repeater
+ %  - Column 3 is worst-case propagation path loss due to smoke/fire for
+ %              dispatch center to repeater
+ %  - Column 4 is worst-case propagation path loss due to foliage for
+ %              dispatch center to repeater
+ propagationPathLosses = zeros(NUM_POSSIBLE_ARCHS,4);
+ 
+ % Initialize matrix for propagation path length
+ % (for possible future analysis), where:
+ %  - Each row corresponds to one possible architecture
+ %  - Column 1 is worst-case propagation path lenght due to smoke/fire for
+ %              portable radio to repeater
+ %  - Column 2 is worst-case propagation path lenght due to foliage for
+ %              portable radio to repeater
+ %  - Column 3 is worst-case propagation path lenght due to smoke/fire for
+ %              dispatch center to repeater
+ %  - Column 4 is worst-case propagation path lenght due to foliage for
+ %              dispatch center to repeater
+ propagationPathLengths = zeros(NUM_POSSIBLE_ARCHS,4);
  
  % Iterate through each possible architecture 
  for k = 1:1:NUM_POSSIBLE_ARCHS
+     
+     %%%%%%%%%%%%
+     % Extract and calculate properties for this architecture
+     %%%%%%%%%%% 
+     
      
      % For sanity's sake, extract all values for each decision in this
      % architecture
@@ -718,7 +771,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      
      % Repeater vertical height, assuming dispatch center and portable
      % radio units are at vertical height = 0
-     thisHeightToRepeater = architectures(k,24); 
+     thisHeightToRepeater = architectures(k,14); %RepeaterVerticalHeight
      
      % Temperature (in Kelvin) of receiving antenna, for all spoke (i.e.
      % non-repeater) nodes
@@ -758,64 +811,158 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      thisGainDispatchRx = calculateGainFromAntennaDiameter(eff,...
                     thisDiaDispatchRx,thisCarrierFrequency);
      
-                
+     % Find maximum propagation path lenghts for foliage cover (in 
+     % worst-case scenario)
+     maxFoliagePathRadioToRepeater = calculatePropagationPath(thisSlantRangeRadioToRepeater,...
+                                                              thisHeightToRepeater,...
+                                                              foliageCoverHeight);
+     maxFoliagePathDispatchToRepeater = calculatePropagationPath(thisSlantRangeDispatchToRepeater,...
+                                                              thisHeightToRepeater,...
+                                                              foliageCoverHeight);
+     
+     % Find maximum propagation path lenghts for fire/smoke cover 
+     % (in worst-case scenario)
+     maxFirePathRadioToRepeater = calculatePropagationPath(thisSlantRangeRadioToRepeater,...
+                                                              thisHeightToRepeater,...
+                                                              fireCoverHeight);
+     maxFirePathDispatchToRepeater = calculatePropagationPath(thisSlantRangeDispatchToRepeater,...
+                                                              thisHeightToRepeater,...
+                                                              fireCoverHeight);
+     
+     % Record propagation path length 
+     propagationPathLengths(k,1) = maxFirePathRadioToRepeater;
+     propagationPathLengths(k,2) = maxFoliagePathRadioToRepeater;
+     propagationPathLengths(k,3) = maxFirePathDispatchToRepeater;
+     propagationPathLengths(k,4) = maxFoliagePathDispatchToRepeater;
+     
+     % Find (linear) losses in worst-case scenario for propagation through foliage
+     foliageLossRadioToRepeater = calculateFoliageLoss(maxFoliagePathRadioToRepeater,thisCarrierFrequency);
+     foliageLossDispatchToRepeater = calculateFoliageLoss(maxFoliagePathDispatchToRepeater,thisCarrierFrequency);                                              
+     
+     % Find (linear) losses in worst-case scenario for propagation through fire/smoke
+     fireLossRadioToRepeater = calculateFoliageLoss(maxFirePathRadioToRepeater,thisCarrierFrequency);
+     fireLossDispatchToRepeater = calculateFoliageLoss(maxFirePathDispatchToRepeater,thisCarrierFrequency);  
+     
+     % Record propagation path losses
+     propagationPathLosses(k,1) = fireLossRadioToRepeater;
+     propagationPathLosses(k,2) = foliageLossRadioToRepeater;
+     propagationPathLosses(k,3) = fireLossDispatchToRepeater;
+     propagationPathLosses(k,4) = foliageLossDispatchToRepeater;
+     
+     
      %%%%%%%%%%%%
-     % Find Eb/No (both calculated and minimum) for FRONTEND links
+     % Find calculated Eb/No for FRONTEND links in the
+     % BEST CASE scenario (i.e. without losses due to fire/smoke or foliage
      %%%%%%%%%%% 
      
      % Calculated Eb/No from Spoke to Hub (radio unit to repeater)
-     thisFrontendEbNoSpoke2Hub = calculateLinearEbNo(thisPowerRadio,...
+     thisBestCaseFrontendEbNoSpoke2Hub = calculateLinearEbNo(thisPowerRadio,...
                             thisGainRadioTx,...
                             thisGainRepeaterRx,...
                             thisSlantRangeRadioToRepeater,...
                             thisCarrierFrequency,...
                             TrHub,...
                             thisFrontDataRate,...
-                            atmLoss);
+                            bestCaseAtmLoss);
      
      % Calculated Eb/No from Hub to Spoke (repeater to radio unit)
-     thisFrontendEbNoHub2Spoke = calculateLinearEbNo(thisPowerRepeater,...
+     thisBestCaseFrontendEbNoHub2Spoke = calculateLinearEbNo(thisPowerRepeater,...
                             thisDiaRepeaterTx,...
                             thisGainRadioRx,...
                             thisSlantRangeRadioToRepeater,...
                             thisCarrierFrequency,...
                             TrSpoke,...
                             thisFrontDataRate,...
-                            atmLoss);
+                            bestCaseAtmLoss);
      
-     % Minimum required Eb/No for both directions.
+     %%%%%%%%%%%%
+     % Find calculated Eb/No for FRONTEND links in the WORST CASE scenario 
+     % (i.e. taking into account losses due to fire/smoke and foliage
+     %%%%%%%%%%% 
+     
+     % Calculated Eb/No from Spoke to Hub (radio unit to repeater)
+     thisWorstCaseFrontendEbNoSpoke2Hub = calculateLinearEbNo(thisPowerRadio,...
+                            thisGainRadioTx,...
+                            thisGainRepeaterRx,...
+                            thisSlantRangeRadioToRepeater,...
+                            thisCarrierFrequency,...
+                            TrHub,...
+                            thisFrontDataRate,...
+                            (fireLossRadioToRepeater*foliageLossRadioToRepeater));
+     
+     % Calculated Eb/No from Hub to Spoke (repeater to radio unit)
+     thisWorstCaseFrontendEbNoHub2Spoke = calculateLinearEbNo(thisPowerRepeater,...
+                            thisDiaRepeaterTx,...
+                            thisGainRadioRx,...
+                            thisSlantRangeRadioToRepeater,...
+                            thisCarrierFrequency,...
+                            TrSpoke,...
+                            thisFrontDataRate,...
+                            (fireLossRadioToRepeater*foliageLossRadioToRepeater));
+     
+     %%%%%%%%%%%%
+     % Minimum required Eb/No for both directions for FRONTEND link
      % Implicit assumption: data rate bandwidth for comm. link in both 
-     % directions is the same
+     % directions (spoke-2-hub and hub-to-spoke) is the same
+     %%%%%%%%%%% 
      thisFrontendEbNoMin = calculateLinearMinEbNo(thisFrontDataRate,...
                                                   thisFrontendBandwidth);
      
      %%%%%%%%%%%%
-     % Find Eb/No (both calculated and minimum) for BACKHAUL links
+     % Find calculated Eb/No for BACKHAUL links in the
+     % BEST CASE scenario (i.e. without losses due to fire/smoke or foliage
      %%%%%%%%%%% 
      
      % Calculated Eb/No from Spoke to Hub (dispatch to repeater)
-     thisBackhaulEbNoSpoke2Hub = calculateLinearEbNo(thisPowerDispatch,...
+     thisBestCaseBackhaulEbNoSpoke2Hub = calculateLinearEbNo(thisPowerDispatch,...
                             thisGainDispatchTx,...
                             thisGainRepeaterRx,...
                             thisSlantRangeDispatchToRepeater,...
                             thisCarrierFrequency,...
                             TrHub,...
                             thisBackhaulDataRate,...
-                            atmLoss);
+                            bestCaseAtmLoss);
                         
      % Calculated Eb/No from Hub to Spoke (repeater to dispatch)
-     thisBackhaulEbNoHub2Spoke = calculateLinearEbNo(thisPowerRepeater,...
+     thisBestCaseBackhaulEbNoHub2Spoke = calculateLinearEbNo(thisPowerRepeater,...
                             thisGainRepeaterTx,...
                             thisGainDispatchRx,...
                             thisSlantRangeDispatchToRepeater,...
                             thisCarrierFrequency,...
                             TrSpoke,...
                             thisBackhaulDataRate,...
-                            atmLoss);
+                            bestCaseAtmLoss);
                         
-     % Minimum required Eb/No for both directions.
+     %%%%%%%%%%%%
+     % Find calculated Eb/No for BACKHAUL links in the WORST CASE scenario 
+     % (i.e. taking into account losses due to fire/smoke and foliage
+     %%%%%%%%%%% 
+     
+     % Calculated Eb/No from Spoke to Hub (dispatch to repeater)
+     thisWorstCaseBackhaulEbNoSpoke2Hub = calculateLinearEbNo(thisPowerDispatch,...
+                            thisGainDispatchTx,...
+                            thisGainRepeaterRx,...
+                            thisSlantRangeDispatchToRepeater,...
+                            thisCarrierFrequency,...
+                            TrHub,...
+                            thisBackhaulDataRate,...
+                            (fireLossDispatchToRepeater*foliageLossDispatchToRepeater));
+                        
+     % Calculated Eb/No from Hub to Spoke (repeater to dispatch)
+     thisWorstCaseBackhaulEbNoHub2Spoke = calculateLinearEbNo(thisPowerRepeater,...
+                            thisGainRepeaterTx,...
+                            thisGainDispatchRx,...
+                            thisSlantRangeDispatchToRepeater,...
+                            thisCarrierFrequency,...
+                            TrSpoke,...
+                            thisBackhaulDataRate,...
+                            (fireLossDispatchToRepeater*foliageLossDispatchToRepeater));
+     
+     %%%%%%%%%%%%
+     % Minimum required Eb/No for both directions for BACKHAUL link
      % Implicit assumption: data rate bandwidth for comm. link in both 
-     % directions is the same                   
+     % directions (spoke-2-hub and hub-to-spoke) is the same
+     %%%%%%%%%%%                   
      thisBackhaulEbNoMin = calculateLinearMinEbNo(thisBackhaulDataRate,...
                                                   thisBackhaulBandwidth);
      
@@ -825,39 +972,54 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      %%%%%%%%%%% 
      
      % Frontend link margin, radio unit to repeater
-     frontendLinkMargins(k,2) = findLinkMarginIndB(...
-                                        thisFrontendEbNoSpoke2Hub, ...
+     bestCaseFrontendLinkMargins(k,2) = findLinkMarginIndB(...
+                                        thisBestCaseFrontendEbNoSpoke2Hub, ...
                                         thisFrontendEbNoMin);
+     worstCaseFrontendLinkMargins(k,2) = findLinkMarginIndB(...
+                                        thisWorstCaseFrontendEbNoSpoke2Hub, ...
+                                        thisFrontendEbNoMin);
+                                    
      
      % Frontend link margin, repeater to radio unit
-     frontendLinkMargins(k,3) = findLinkMarginIndB(...
-                                        thisFrontendEbNoHub2Spoke, ...
+     bestCaseFrontendLinkMargins(k,3) = findLinkMarginIndB(...
+                                        thisBestCaseFrontendEbNoHub2Spoke, ...
+                                        thisFrontendEbNoMin);
+     worstCaseFrontendLinkMargins(k,3) = findLinkMarginIndB(...
+                                        thisWorstCaseFrontendEbNoHub2Spoke, ...
                                         thisFrontendEbNoMin);
      
      % Backhaul link margin, dispatch to repeater
-     backhaulLinkMargins(k,2) = findLinkMarginIndB(...
-                                        thisBackhaulEbNoSpoke2Hub, ...
+     bestCaseBackhaulLinkMargins(k,2) = findLinkMarginIndB(...
+                                        thisBestCaseBackhaulEbNoSpoke2Hub, ...
                                         thisBackhaulEbNoMin);
-     
+     worstCaseBackhaulLinkMargins(k,2) = findLinkMarginIndB(...
+                                        thisWorstCaseBackhaulEbNoSpoke2Hub, ...
+                                        thisBackhaulEbNoMin);
      
      % Backhaul link margin, repeater to dispatch
-     backhaulLinkMargins(k,3) = findLinkMarginIndB(...
-                                        thisBackhaulEbNoHub2Spoke, ...
+     bestCaseBackhaulLinkMargins(k,3) = findLinkMarginIndB(...
+                                        thisBestCaseBackhaulEbNoHub2Spoke, ...
                                         thisBackhaulEbNoMin);
-                                    
+     worstCaseBackhaulLinkMargins(k,3) = findLinkMarginIndB(...
+                                        thisWorstCaseBackhaulEbNoHub2Spoke, ...
+                                        thisBackhaulEbNoMin);                               
      
      %%%%%%%%%%%%
      % Compute figure of merit for link margins
      % - Minimum of frontend link margins in both directions
      % - Minimum of backhaul link margins in both directions
      %%%%%%%%%%% 
+
+     bestCaseFrontendLinkMargins(k,1) = min(bestCaseFrontendLinkMargins(k,2),...
+                                    bestCaseFrontendLinkMargins(k,3));
+     worstCaseFrontendLinkMargins(k,1) = min(worstCaseFrontendLinkMargins(k,2),...
+                                    worstCaseFrontendLinkMargins(k,3));
      
-     frontendLinkMargins(k,1) = min(frontendLinkMargins(k,2),...
-                                    frontendLinkMargins(k,3));
-     
-     backhaulLinkMargins(k,1) = min(backhaulLinkMargins(k,2),...
-                                    backhaulLinkMargins(k,3));
-     
+     bestCaseBackhaulLinkMargins(k,1) = min(bestCaseBackhaulLinkMargins(k,2),...
+                                    bestCaseBackhaulLinkMargins(k,3));
+     worstCaseBackhaulLinkMargins(k,1) = min(worstCaseBackhaulLinkMargins(k,2),...
+                                    worstCaseBackhaulLinkMargins(k,3));
+                                
  end
  
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -911,7 +1073,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
 %{
 figure
 hold on
-frontendMarginPlot = plot(sort(frontendLinkMargins(:,1)));
+frontendMarginPlot = plot(sort(bestCaseFrontendLinkMargins(:,1)));
 grid
 set(frontendMarginPlot,'LineWidth',1);
 xlabel('Architectures (ordered by link margin)')
@@ -921,7 +1083,7 @@ hold off
 
 figure
 hold on
-frontendMarginPlot = plot(sort(backhaulLinkMargins(:,1)));
+frontendMarginPlot = plot(sort(bestCaseBackhaulLinkMargins(:,1)));
 grid
 set(frontendMarginPlot,'LineWidth',2);
 xlabel('Architectures (ordered by link margin)')
@@ -931,7 +1093,7 @@ hold off
 
 figure
 hold on
-costPlot = scatter(totalCost(:,4),frontendLinkMargins(:,1),5);
+costPlot = scatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),5);
 grid
 set(costPlot,'MarkerEdgeColor',[0 .5 .5],...
                       'MarkerFaceColor',[0 .7 .7],...
@@ -982,35 +1144,67 @@ propertiesOfInterest = [0    %PortableRadioPurchaseCost
 
 for i = 1:1:35
    
-    % Plot Frontend Link Margins
+    % Plot Best Case Frontend Link Margins
     if propertiesOfInterest(i)
         figure
         hold on
-        gscatter(totalCost(:,4),frontendLinkMargins(:,1),architectures(:,i));
+        gscatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),architectures(:,i));
         xlim([0 3*10^7])
         ylim([0 70])
-        xlabel('Total Cost of Ownership over 15 years (USD)')
+        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
         ylabel('Link Margin, dB')
 
         thisGrouping = architecturesTable.Properties.VariableNames{i};
 
-        title(['Frontend Link Margin vs TCO, ordered by ' thisGrouping])
+        title({'Best Case Frontend Link Margin vs TCO';...
+                    ['ordered by ' thisGrouping]})
         hold off
     end
    
-    % Plot Backhaul Link Margins
+    % Plot Best Case Backhaul Link Margins
     if propertiesOfInterest(i)
         figure
         hold on
-        gscatter(totalCost(:,4),backhaulLinkMargins(:,1),architectures(:,i));
+        gscatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),architectures(:,i));
         xlim([0 3*10^7])
         ylim([0 70])
-        xlabel('Total Cost of Ownership over 15 years (USD)')
+        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
         ylabel('Link Margin, dB')
 
         thisGrouping = architecturesTable.Properties.VariableNames{i};
 
-        title(['Backhaul Link Margin vs TCO, ordered by ' thisGrouping])
+        title({'Best Case Backhaul Link Margin vs TCO';...
+                    ['ordered by ' thisGrouping]})
+        hold off
+    end
+    
+    % Plot Worst Case Frontend Link Margins
+    if propertiesOfInterest(i)
+        figure
+        hold on
+        gscatter(totalCost(:,4),worstCaseFrontendLinkMargins(:,1),architectures(:,i));
+        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+        ylabel('Link Margin, dB')
+
+        thisGrouping = architecturesTable.Properties.VariableNames{i};
+
+        title({'Worst Case Frontend Link Margin vs TCO';...
+                   ['ordered by ' thisGrouping]})
+        hold off
+    end
+   
+    % Plot Worst Case Backhaul Link Margins
+    if propertiesOfInterest(i)
+        figure
+        hold on
+        gscatter(totalCost(:,4),worstCaseBackhaulLinkMargins(:,1),architectures(:,i));
+        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+        ylabel('Link Margin, dB')
+
+        thisGrouping = architecturesTable.Properties.VariableNames{i};
+
+        title({'Worst Case Backhaul Link Margin vs TCO';...
+                   ['ordered by ' thisGrouping]})
         hold off
     end
 end
