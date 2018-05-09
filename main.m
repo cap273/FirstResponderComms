@@ -1127,8 +1127,9 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
              end
          end
      end
-     fprintf('\nPareto front calculation complete.\n');
-     toc
+     fprintf('Pareto front calculation complete.\n');
+     tElapsed = toc;
+     fprintf(['Elapsed time to complete Pareto front analysis (in seconds): ' int2str(round(tElapsed)) '\n']);
  end
  %% Visualization
  
@@ -1136,7 +1137,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
   
 % Specify an architecture to highlight (by its index)
 % If no architecture needs to be highlighted, set to 0
-highlightArchIndex = 297745;
+highlightArchIndex = 0;
 
  
 %{
