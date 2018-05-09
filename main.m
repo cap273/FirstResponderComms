@@ -17,13 +17,10 @@ close all
 %% Global definitions
 periodOfTimeForCostModel = 15; %years
 
-%% MATLAB Reminders
-% Regarding matrix indexing:
-% A(2,4)  -> % Extract the element in row 2, column 4
-%
-% Use square brackets (not curly brackets) to declare a
-% matrix of numbers (as opposed to a cell array). Reference:
-% https://stackoverflow.com/questions/5966817/difference-between-square-brackets-and-curly-brackets-in-matlab
+% Parent front algorithm runs in quadratic time. Very slow for large number
+% of possible architectures. Set 1 to run Pareto front analysis, 0
+% otherwise.
+runParetoFrontAnalysis = 0;
 
 %% Architecture Definitions for each Communications Network Node
 
@@ -436,6 +433,8 @@ carrierFrequency = [155*10^6,425*10^6,485*10^6,770*10^6,815.5*10^6, ...
 %   Node Type 3 (Dispatch Center)
 %   Channel (e.g. bandwidth, data rate, etc.)
 
+ fprintf('Enumerating possible architectures...\n');
+ 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Node 1 (Portable Unit)
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -660,6 +659,8 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
 
  %% Architecture Evaluation
  
+ fprintf('Evaluating possible architectures against Figures of Merit...\n');
+ 
  %%%%%%%%%%%%%%%%%%%%
  % Make general assumptions
  %%%%%%%%%%%%%%%%%%%%
@@ -681,7 +682,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  
  % Maximum height of smoke/fire cover (in meters)
  % Reference: https://github.com/cap273/FirstResponderComms/blob/master/fireLossModel.png
- fireCoverHeight = 1000; %1km
+ fireCoverHeight = 100; %100m
  
  % Maximum horizontal distance of foliage cover, and of fire/smoke cover
  % (in meters) from spoke
@@ -1087,7 +1088,56 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      totalCost(k,4) = sum(totalCost(k,1:3));
  end
  
+ %% Pareto front
+ 
+ if (runParetoFrontAnalysis == 1)
+     % Initialize array where entry i is equal to 1 if architecture i is 
+     % dominated, zero otherwise
+     isDominated = zeros(NUM_POSSIBLE_ARCHS,1);
+
+     fprintf('Calculating Pareto front...\n');
+     fprintf('This algorithm is slow - runs in quadratic time O(N^2), where N is the number of architectures.\n')
+     tic
+     % Iterate through each possible architecture 
+     for i = 1:1:NUM_POSSIBLE_ARCHS
+
+         % Iterate through each other possible architecture
+         for j = 1:1:NUM_POSSIBLE_ARCHS
+             if i ~= j
+
+                 % Initialize 5-by-1 array, where each entry is true if
+                 % architecture i is dominated by architecture j in one
+                 % particular figure of merit, false otherwise
+                 figuresOfMeritDominated = zeros(5,1);
+
+                 % Compare architecture i against architecture j in all 5
+                 % figures of merit
+                 figuresOfMeritDominated(1,1) = bestCaseFrontendLinkMargins(j,1) > bestCaseFrontendLinkMargins(i,1);
+                 figuresOfMeritDominated(2,1) = worstCaseFrontendLinkMargins(j,1) > worstCaseFrontendLinkMargins(i,1);
+                 figuresOfMeritDominated(3,1) = bestCaseBackhaulLinkMargins(j,1) > bestCaseBackhaulLinkMargins(i,1);
+                 figuresOfMeritDominated(4,1) = worstCaseBackhaulLinkMargins(j,1) > worstCaseBackhaulLinkMargins(i,1);
+                 figuresOfMeritDominated(5,1) = totalCost(j,1) < totalCost(i,1);
+
+                 % If architecture j is better than architecture i in all 
+                 % figures of merit, mark i as being dominated
+                 if prod(figuresOfMeritDominated)
+                      isDominated(i,1) = 1;
+                      break;
+                 end
+             end
+         end
+     end
+     fprintf('\nPareto front calculation complete.\n');
+     toc
+ end
  %% Visualization
+ 
+ fprintf('Visualization activities...\n');
+  
+% Specify an architecture to highlight (by its index)
+% If no architecture needs to be highlighted, set to 0
+highlightArchIndex = 297745;
+
  
 %{
 figure
@@ -1109,20 +1159,107 @@ xlabel('Architectures (ordered by link margin)')
 ylabel('Link Margin, dB')
 title('Backhaul Link Margin (minimum of link margin in both directions)')
 hold off
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot link margins vs. TCO (4 graphs, best/worst case for
+% frontend/backahul
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 figure
 hold on
-costPlot = scatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),5);
+linkVsCostPlot = scatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),5);
 grid
-set(costPlot,'MarkerEdgeColor',[0 .5 .5],...
+set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
                       'MarkerFaceColor',[0 .7 .7],...
                       'LineWidth',0.2);
-xlabel('Total Cost of Ownership over 15 years (USD)')
+xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
 ylabel('Link Margin, dB')
-title('Frontend Link Margin vs TCO')
+title('Best Case Frontend Link Margin vs TCO')
+% If a particular architecture (as specified by an index) needs to
+% be highlighted plot it
+if highlightArchIndex > 0
+    selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+        bestCaseFrontendLinkMargins(highlightArchIndex,1),...
+        'mo',...
+        'MarkerEdgeColor','k',...
+        'MarkerFaceColor',[.49 1 .63],...
+        'MarkerSize',15);
+end
 hold off
-%}
 
+figure
+hold on
+linkVsCostPlot = scatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),5);
+grid
+set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
+                      'MarkerFaceColor',[0 .7 .7],...
+                      'LineWidth',0.2);
+xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+ylabel('Link Margin, dB')
+title('Best Case Backhaul Link Margin vs TCO')
+% If a particular architecture (as specified by an index) needs to
+% be highlighted plot it
+if highlightArchIndex > 0
+     selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+        bestCaseBackhaulLinkMargins(highlightArchIndex,1),...
+        'mo',...
+        'MarkerEdgeColor','k',...
+        'MarkerFaceColor',[.49 1 .63],...
+        'MarkerSize',15);
+end
+hold off
+
+figure
+hold on
+linkVsCostPlot = scatter(totalCost(:,4),worstCaseFrontendLinkMargins(:,1),5);
+grid
+set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
+                      'MarkerFaceColor',[0 .7 .7],...
+                      'LineWidth',0.2);
+xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+ylabel('Link Margin, dB')
+title('Worst Case Frontend Link Margin vs TCO')
+% If a particular architecture (as specified by an index) needs to
+% be highlighted plot it
+if highlightArchIndex > 0
+     selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+        worstCaseFrontendLinkMargins(highlightArchIndex,1),...
+        'mo',...
+        'MarkerEdgeColor','k',...
+        'MarkerFaceColor',[.49 1 .63],...
+        'MarkerSize',15);
+end
+hold off
+
+figure
+hold on
+linkVsCostPlot = scatter(totalCost(:,4),worstCaseBackhaulLinkMargins(:,1),5);
+grid
+set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
+                      'MarkerFaceColor',[0 .7 .7],...
+                      'LineWidth',0.2);
+xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+ylabel('Link Margin, dB')
+title('Worst Case Backhaul Link Margin vs TCO')
+% If a particular architecture (as specified by an index) needs to
+% be highlighted plot it
+if highlightArchIndex > 0
+     selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+        worstCaseBackhaulLinkMargins(highlightArchIndex,1),...
+        'mo',...
+        'MarkerEdgeColor','k',...
+        'MarkerFaceColor',[.49 1 .63],...
+        'MarkerSize',15);
+end
+hold off
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot link margins vs. TCO, *as grouped by certain properties*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        
 % Define 35-by-1 array defining the architecture properties of interest to
 % plot
 propertiesOfInterest = [0    %PortableRadioPurchaseCost
@@ -1161,13 +1298,19 @@ propertiesOfInterest = [0    %PortableRadioPurchaseCost
                         1    %BackhaulBandwidth
                         1];  %carrierFrequency
 
-for i = 1:1:35
-   
-%     % Plot Best Case Frontend Link Margins
+
+% Iterate through all possible properties of an architecture
+% for i = 1:1:35
+%    
+%     % If this particular prooerty is of interest, plot it
 %     if propertiesOfInterest(i)
+%         
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         % Plot Best Case Frontend Link Margins
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %         figure
 %         hold on
-%         gscatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),architectures(:,i));
+%         gscatterPlot = gscatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),architectures(:,i));
 %         xlim([0 3*10^7])
 %         ylim([0 70])
 %         xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
@@ -1177,14 +1320,31 @@ for i = 1:1:35
 % 
 %         title({'Best Case Frontend Link Margin vs TCO';...
 %                     ['ordered by ' thisGrouping]})
+%                 
+%         % If a particular architecture (as specified by an index) needs to
+%         % be highlighted plot it
+%         if highlightArchIndex > 0
+%             
+%             selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+%                 bestCaseFrontendLinkMargins(highlightArchIndex,1),...
+%                 'mo',...
+%                 'MarkerEdgeColor','k',...
+%                 'MarkerFaceColor',[.49 1 .63],...
+%                 'MarkerSize',15);
+% 
+%             legend(gscatterPlot); % Only display legend for gscatter plot
+%         
+%         end
+%         
 %         hold off
-%     end
-%    
-%     % Plot Best Case Backhaul Link Margins
-%     if propertiesOfInterest(i)
+%     
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         % Plot Best Case Backhaul Link Margins
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     
 %         figure
 %         hold on
-%         gscatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),architectures(:,i));
+%         gscatterPlot = gscatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),architectures(:,i));
 %         xlim([0 3*10^7])
 %         ylim([0 70])
 %         xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
@@ -1194,36 +1354,87 @@ for i = 1:1:35
 % 
 %         title({'Best Case Backhaul Link Margin vs TCO';...
 %                     ['ordered by ' thisGrouping]})
+%                 
+%         % If a particular architecture (as specified by an index) needs to
+%         % be highlighted plot it
+%         if highlightArchIndex > 0
+%             
+%             selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+%                 bestCaseBackhaulLinkMargins(highlightArchIndex,1),...
+%                 'mo',...
+%                 'MarkerEdgeColor','k',...
+%                 'MarkerFaceColor',[.49 1 .63],...
+%                 'MarkerSize',15);
+% 
+%             legend(gscatterPlot); % Only display legend for gscatter plot
+%         
+%         end
+%         
+%         hold off
+%         
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         % Plot Worst Case Frontend Link Margins
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         figure
+%         hold on
+%         gscatterPlot = gscatter(totalCost(:,4),worstCaseFrontendLinkMargins(:,1),architectures(:,i));
+%         xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+%         ylabel('Link Margin, dB')
+% 
+%         thisGrouping = architecturesTable.Properties.VariableNames{i};
+% 
+%         title({'Worst Case Frontend Link Margin vs TCO';...
+%                    ['ordered by ' thisGrouping]})
+%         
+%         % If a particular architecture (as specified by an index) needs to
+%         % be highlighted plot it
+%         if highlightArchIndex > 0
+%             
+%             selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+%                 worstCaseFrontendLinkMargins(highlightArchIndex,1),...
+%                 'mo',...
+%                 'MarkerEdgeColor','k',...
+%                 'MarkerFaceColor',[.49 1 .63],...
+%                 'MarkerSize',15);
+% 
+%             legend(gscatterPlot); % Only display legend for gscatter plot
+%         
+%         end
+%         
+%         hold off
+%    
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         % Plot Worst Case Backhaul Link Margins
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         
+%         figure
+%         hold on
+%         gscatterPlot = gscatter(totalCost(:,4),worstCaseBackhaulLinkMargins(:,1),architectures(:,i));
+%         xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
+%         ylabel('Link Margin, dB')
+% 
+%         thisGrouping = architecturesTable.Properties.VariableNames{i};
+% 
+%         title({'Worst Case Backhaul Link Margin vs TCO';...
+%                    ['ordered by ' thisGrouping]})
+%                
+%         % If a particular architecture (as specified by an index) needs to
+%         % be highlighted plot it
+%         if highlightArchIndex > 0
+%             
+%             selectedArchPlot = plot(totalCost(highlightArchIndex,4),...
+%                 worstCaseBackhaulLinkMargins(highlightArchIndex,1),...
+%                 'mo',...
+%                 'MarkerEdgeColor','k',...
+%                 'MarkerFaceColor',[.49 1 .63],...
+%                 'MarkerSize',15);
+% 
+%             legend(gscatterPlot); % Only display legend for gscatter plot
+%         
+%         end
+%         
 %         hold off
 %     end
-    
-    % Plot Worst Case Frontend Link Margins
-    if propertiesOfInterest(i)
-        figure
-        hold on
-        gscatter(totalCost(:,4),worstCaseFrontendLinkMargins(:,1),architectures(:,i));
-        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
-        ylabel('Link Margin, dB')
+% end
 
-        thisGrouping = architecturesTable.Properties.VariableNames{i};
-
-        title({'Worst Case Frontend Link Margin vs TCO';...
-                   ['ordered by ' thisGrouping]})
-        hold off
-    end
-   
-    % Plot Worst Case Backhaul Link Margins
-    if propertiesOfInterest(i)
-        figure
-        hold on
-        gscatter(totalCost(:,4),worstCaseBackhaulLinkMargins(:,1),architectures(:,i));
-        xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
-        ylabel('Link Margin, dB')
-
-        thisGrouping = architecturesTable.Properties.VariableNames{i};
-
-        title({'Worst Case Backhaul Link Margin vs TCO';...
-                   ['ordered by ' thisGrouping]})
-        hold off
-    end
-end
+fprintf('Script execution completed.\n');
