@@ -18,7 +18,8 @@ close all
 periodOfTimeForCostModel = 15; %years
 
 % Parent front algorithm runs in quadratic time. Very slow for large number
-% of possible architectures. Set 1 to run Pareto front analysis, 0
+% of possible architectures. Runs in quadratic time O(N^2), where N is the 
+% number of architectures. Set 1 to run Pareto front analysis, 0
 % otherwise.
 runParetoFrontAnalysis = 0;
 
@@ -1093,10 +1094,9 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  if (runParetoFrontAnalysis == 1)
      % Initialize array where entry i is equal to 1 if architecture i is 
      % dominated, zero otherwise
-     isDominated = zeros(NUM_POSSIBLE_ARCHS,1);
+     isDominated = false(NUM_POSSIBLE_ARCHS,1);
 
      fprintf('Calculating Pareto front...\n');
-     fprintf('This algorithm is slow - runs in quadratic time O(N^2), where N is the number of architectures.\n')
      tic
      % Iterate through each possible architecture 
      for i = 1:1:NUM_POSSIBLE_ARCHS
@@ -1164,18 +1164,29 @@ hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot link margins vs. TCO (4 graphs, best/worst case for
 % frontend/backahul
+% If Pareto front analysis selected, plot only architectures on the
+% Pareto front
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 figure
 hold on
-linkVsCostPlot = scatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),5);
+if (runParetoFrontAnalysis == 1)
+    % Plot only non-dominated architectures on the Pareto front
+    linkVsCostPlot = scatter(totalCost(~isDominated(:,1),4),...
+        bestCaseFrontendLinkMargins(~isDominated(:,1),1),5);  
+    title({'Pareto Front';...
+           'Best Case Frontend Link Margin vs TCO'})
+else
+    % Plot all architectures
+    linkVsCostPlot = scatter(totalCost(:,4),bestCaseFrontendLinkMargins(:,1),5);
+    title('Best Case Frontend Link Margin vs TCO')
+end
 grid
 set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
                       'MarkerFaceColor',[0 .7 .7],...
                       'LineWidth',0.2);
 xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
 ylabel('Link Margin, dB')
-title('Best Case Frontend Link Margin vs TCO')
 % If a particular architecture (as specified by an index) needs to
 % be highlighted plot it
 if highlightArchIndex > 0
@@ -1190,14 +1201,24 @@ hold off
 
 figure
 hold on
-linkVsCostPlot = scatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),5);
+if (runParetoFrontAnalysis == 1)
+    % Plot only non-dominated architectures on the Pareto front
+    linkVsCostPlot = scatter(totalCost(~isDominated(:,1),4),...
+        bestCaseBackhaulLinkMargins(~isDominated(:,1),1),5);  
+    title({'Pareto Front';...
+           'Best Case Backhaul Link Margin vs TCO'})
+else
+    % Plot all architectures
+    linkVsCostPlot = scatter(totalCost(:,4),bestCaseBackhaulLinkMargins(:,1),5);
+    title('Best Case Backhaul Link Margin vs TCO')
+end
+
 grid
 set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
                       'MarkerFaceColor',[0 .7 .7],...
                       'LineWidth',0.2);
 xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
 ylabel('Link Margin, dB')
-title('Best Case Backhaul Link Margin vs TCO')
 % If a particular architecture (as specified by an index) needs to
 % be highlighted plot it
 if highlightArchIndex > 0
@@ -1212,14 +1233,24 @@ hold off
 
 figure
 hold on
-linkVsCostPlot = scatter(totalCost(:,4),worstCaseFrontendLinkMargins(:,1),5);
+if (runParetoFrontAnalysis == 1)
+    % Plot only non-dominated architectures on the Pareto front
+    linkVsCostPlot = scatter(totalCost(~isDominated(:,1),4),...
+        worstCaseFrontendLinkMargins(~isDominated(:,1),1),5);  
+    title({'Pareto Front';...
+           'Worst Case Frontend Link Margin vs TCO'})
+else
+    % Plot all architectures
+    linkVsCostPlot = scatter(totalCost(:,4),worstCaseFrontendLinkMargins(:,1),5);
+    title('Worst Case Frontend Link Margin vs TCO')
+end
+
 grid
 set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
                       'MarkerFaceColor',[0 .7 .7],...
                       'LineWidth',0.2);
 xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
 ylabel('Link Margin, dB')
-title('Worst Case Frontend Link Margin vs TCO')
 % If a particular architecture (as specified by an index) needs to
 % be highlighted plot it
 if highlightArchIndex > 0
@@ -1234,14 +1265,24 @@ hold off
 
 figure
 hold on
-linkVsCostPlot = scatter(totalCost(:,4),worstCaseBackhaulLinkMargins(:,1),5);
+if (runParetoFrontAnalysis == 1)
+    % Plot only non-dominated architectures on the Pareto front
+    linkVsCostPlot = scatter(totalCost(~isDominated(:,1),4),...
+        worstCaseBackhaulLinkMargins(~isDominated(:,1),1),5);  
+    title({'Pareto Front';...
+           'Worst Case Backhaul Link Margin vs TCO'})
+else
+    % Plot all architectures
+    linkVsCostPlot = scatter(totalCost(:,4),worstCaseBackhaulLinkMargins(:,1),5);
+    title('Worst Case Backhaul Link Margin vs TCO')
+end
 grid
 set(linkVsCostPlot,'MarkerEdgeColor',[0 .5 .5],...
                       'MarkerFaceColor',[0 .7 .7],...
                       'LineWidth',0.2);
 xlabel(['Total Cost of Ownership over ' int2str(periodOfTimeForCostModel) ' years (USD)'])
 ylabel('Link Margin, dB')
-title('Worst Case Backhaul Link Margin vs TCO')
+
 % If a particular architecture (as specified by an index) needs to
 % be highlighted plot it
 if highlightArchIndex > 0
