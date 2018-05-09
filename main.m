@@ -21,7 +21,8 @@ periodOfTimeForCostModel = 15; %years
 % of possible architectures. Runs in quadratic time O(N^2), where N is the 
 % number of architectures. Set 1 to run Pareto front analysis, 0
 % otherwise.
-runParetoFrontAnalysis = 0;
+runParetoFrontAnalysis = 1;
+%load('isDominated.mat')
 
 %% Architecture Definitions for each Communications Network Node
 
@@ -1099,7 +1100,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      fprintf('Calculating Pareto front...\n');
      tic
      % Iterate through each possible architecture 
-     for i = 1:1:NUM_POSSIBLE_ARCHS
+     parfor i = 1:1:NUM_POSSIBLE_ARCHS
 
          % Iterate through each other possible architecture
          for j = 1:1:NUM_POSSIBLE_ARCHS
@@ -1122,10 +1123,11 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
                  % figures of merit, mark i as being dominated
                  if prod(figuresOfMeritDominated)
                       isDominated(i,1) = 1;
+                      
                       break;
-                 end
+                 end              
              end
-         end
+         end   
      end
      fprintf('Pareto front calculation complete.\n');
      tElapsed = toc;
@@ -1137,7 +1139,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
   
 % Specify an architecture to highlight (by its index)
 % If no architecture needs to be highlighted, set to 0
-highlightArchIndex = 0;
+highlightArchIndex = 51841;
 
  
 %{
