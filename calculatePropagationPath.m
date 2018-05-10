@@ -30,13 +30,13 @@ end
 % Find the sine of the triangle
 sinTheta = v1/s1;
 
-% Find angle theta (in degrees)
-theta = asind(sinTheta);
+% Find angle theta (in radians)
+theta = asin(sinTheta);
 
-% Find the Tangent of theta (where the input of theta is in degrees)
-tanTheta = tand(theta);
+% Find tangent of theta
+tanTheta = tan(theta);
 
-if h2*tanTheta > v2
+if (h2*tanTheta) > v2
     %   Case A: v2 = v3
     %   https://github.com/cap273/FirstResponderComms/blob/master/propagationPathCalculationCaseA.png
     v3 = v2;
@@ -49,7 +49,7 @@ else
 end
 
 % Find propagation path
-s2 = v3*sinTheta;
+s2 = v3/sinTheta;
 
 end
 
