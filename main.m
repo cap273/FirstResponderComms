@@ -21,8 +21,7 @@ periodOfTimeForCostModel = 15; %years
 % of possible architectures. Runs in quadratic time O(N^2), where N is the 
 % number of architectures. Set 1 to run Pareto front analysis, 0
 % otherwise.
-runParetoFrontAnalysis = 1;
-%load('isDominated.mat')
+runParetoFrontAnalysis = 0;
 
 %% Architecture Definitions for each Communications Network Node
 
@@ -1117,13 +1116,12 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
                  figuresOfMeritDominated(2,1) = worstCaseFrontendLinkMargins(j,1) > worstCaseFrontendLinkMargins(i,1);
                  figuresOfMeritDominated(3,1) = bestCaseBackhaulLinkMargins(j,1) > bestCaseBackhaulLinkMargins(i,1);
                  figuresOfMeritDominated(4,1) = worstCaseBackhaulLinkMargins(j,1) > worstCaseBackhaulLinkMargins(i,1);
-                 figuresOfMeritDominated(5,1) = totalCost(j,1) < totalCost(i,1);
+                 figuresOfMeritDominated(5,1) = totalCost(j,4) < totalCost(i,4);
 
                  % If architecture j is better than architecture i in all 
                  % figures of merit, mark i as being dominated
                  if prod(figuresOfMeritDominated)
                       isDominated(i,1) = 1;
-                      
                       break;
                  end              
              end
@@ -1139,7 +1137,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
   
 % Specify an architecture to highlight (by its index)
 % If no architecture needs to be highlighted, set to 0
-highlightArchIndex = 51841;
+highlightArchIndex = 0;
 
  
 %{

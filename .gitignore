@@ -1,2 +1,5 @@
 # ignore a file type (MATLAB editor autosave)
 *.asv
+
+# ignore test MATLAB files
+*test.m
