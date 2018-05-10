@@ -1090,7 +1090,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
  end
  
  %% Pareto front
- %{
+ 
  if (runParetoFrontAnalysis == 1)
      % Initialize array where entry i is equal to 1 if architecture i is 
      % dominated, zero otherwise
@@ -1131,7 +1131,7 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
      tElapsed = toc;
      fprintf(['Elapsed time to complete Pareto front analysis (in seconds): ' int2str(round(tElapsed)) '\n']);
  end
- %}
+ 
  
  %% Visualization
  
