@@ -8,6 +8,10 @@
 % Diagram of the model for the various communications links, and their
 % relates Figures of Merit:
 % https://github.com/cap273/FirstResponderComms/blob/master/HubAndSpoke-CommLinks.png
+%
+% Authors:
+%   - Carlos Patiño, cap273@cornell.edu
+%   - Jessica Smith, jas859@cornell.edu
 
 %% Clear everything
 clc
@@ -17,10 +21,11 @@ close all
 %% Global definitions
 periodOfTimeForCostModel = 15; %years
 
-% Parent front algorithm runs in quadratic time. Very slow for large number
+% Parent front algorithm is very slow for large number
 % of possible architectures. Runs in quadratic time O(N^2), where N is the 
-% number of architectures. Set 1 to run Pareto front analysis, 0
-% otherwise.
+% number of possible architectures.
+% It is recommended to run Pareto front analysis only a multi-core computer.
+% Set 1 to run Pareto front analysis, 0 otherwise.
 runParetoFrontAnalysis = 0;
 
 %% Architecture Definitions for each Communications Network Node
@@ -1112,11 +1117,11 @@ NUM_POSSIBLE_ARCHS = size(architectures,1);
 
                  % Compare architecture i against architecture j in all 5
                  % figures of merit
-                 figuresOfMeritDominated(1,1) = bestCaseFrontendLinkMargins(j,1) > bestCaseFrontendLinkMargins(i,1);
-                 figuresOfMeritDominated(2,1) = worstCaseFrontendLinkMargins(j,1) > worstCaseFrontendLinkMargins(i,1);
-                 figuresOfMeritDominated(3,1) = bestCaseBackhaulLinkMargins(j,1) > bestCaseBackhaulLinkMargins(i,1);
-                 figuresOfMeritDominated(4,1) = worstCaseBackhaulLinkMargins(j,1) > worstCaseBackhaulLinkMargins(i,1);
-                 figuresOfMeritDominated(5,1) = totalCost(j,4) < totalCost(i,4);
+                 figuresOfMeritDominated(1,1) = bestCaseFrontendLinkMargins(j,1) > bestCaseFrontendLinkMargins(i,1); %#ok<PFBNS>
+                 figuresOfMeritDominated(2,1) = worstCaseFrontendLinkMargins(j,1) > worstCaseFrontendLinkMargins(i,1); %#ok<PFBNS>
+                 figuresOfMeritDominated(3,1) = bestCaseBackhaulLinkMargins(j,1) > bestCaseBackhaulLinkMargins(i,1); %#ok<PFBNS>
+                 figuresOfMeritDominated(4,1) = worstCaseBackhaulLinkMargins(j,1) > worstCaseBackhaulLinkMargins(i,1); %#ok<PFBNS>
+                 figuresOfMeritDominated(5,1) = totalCost(j,4) < totalCost(i,4); %#ok<PFBNS>
 
                  % If architecture j is better than architecture i in all 
                  % figures of merit, mark i as being dominated
@@ -1346,7 +1351,7 @@ propertiesOfInterest = [0    %PortableRadioPurchaseCost
 % Iterate through all possible properties of an architecture
 % for i = 1:1:35
 %    
-%     % If this particular prooerty is of interest, plot it
+%     % If this particular property is of interest, plot it
 %     if propertiesOfInterest(i)
 %         
 %         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

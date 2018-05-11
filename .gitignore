@@ -3,3 +3,6 @@
 
 # ignore test MATLAB files
 *test.m
+
+# ignore a temporary auxilliary function
+*legendmarkeradjust.m
